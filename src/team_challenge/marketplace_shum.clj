@@ -16,15 +16,14 @@
 (defn stop-db []
   (mount/stop #'team-challenge.db/*db*))
 
-(defn start-system [] 
+(defn start-system []
   (start-config)
   (start-db))
 
 (comment
-  
+
   (start-config)
-  (start-db)
-  )
+  (start-db))
 
 (defn -main
   "Start system"

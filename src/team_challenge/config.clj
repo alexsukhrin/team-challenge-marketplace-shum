@@ -17,8 +17,6 @@
   :start
   (read-config (str "config/" (env! "APP_ENV") ".edn")))
 
-
 (comment
-  
-  (System/getenv "APP_ENV")
-  )
+
+  (System/getenv "APP_ENV"))
