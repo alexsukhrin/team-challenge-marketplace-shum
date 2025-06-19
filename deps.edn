@@ -1,11 +1,11 @@
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.11.1"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.1"}}
  :aliases
  {:run-m {:main-opts ["-m" "team-challenge.marketplace-shum"]}
   :run-x {:ns-default team-challenge.marketplace-shum
           :exec-fn greet
           :exec-args {:name "Clojure"}}
-  :build {:deps {io.github.clojure/tools.build
+  :build {:deps {io.github.clojure/tools.build 
                  {:mvn/version "0.9.6"}}
           :ns-default build}
   :test {:extra-paths ["test"]
