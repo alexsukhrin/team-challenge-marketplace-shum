@@ -27,12 +27,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-deps
 
-    - name: Lint with clj-kondo
+    - name: Install clj-kondo
       run: |
-        curl -sLO https://github.com/clj-kondo/clj-kondo/releases/download/v2024.05.15/clj-kondo-linux-amd64.zip
-        unzip -o clj-kondo-linux-amd64.zip -d clj-kondo
-        sudo mv clj-kondo/clj-kondo /usr/local/bin/
-        clj-kondo --lint src test
+        curl -LO https://github.com/clj-kondo/clj-kondo/releases/download/v2024.05.15/clj-kondo-linux-amd64-static.tar.gz
+        tar -xzf clj-kondo-linux-amd64-static.tar.gz
+        sudo mv clj-kondo /usr/local/bin/
+
+    - name: Run clj-kondo lint
+      run: clj-kondo --lint src test
 
     - name: Run tests
       run: clojure -T:build test
