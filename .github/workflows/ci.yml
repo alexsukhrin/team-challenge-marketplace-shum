@@ -4,31 +4,35 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
+    branches: ["*"]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Clojure
-      uses: DeLaGuardo/setup-clojure@v1
+    - name: Set up Clojure CLI
+      uses: DeLaGuardo/setup-clojure@11.0
       with:
         cli: latest
 
-    - name: Cache Clojure dependencies
+    - name: Cache Clojure deps
       uses: actions/cache@v4
       with:
         path: ~/.m2
-        key: ${{ runner.os }}-clojure-${{ hashFiles('**/deps.edn') }}
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
         restore-keys: |
-          ${{ runner.os }}-clojure-
+          ${{ runner.os }}-deps
 
     - name: Lint with clj-kondo
-      uses: DeLaGuardo/clj-kondo-action@master
+      run: |
+        curl -sLO https://github.com/clj-kondo/clj-kondo/releases/download/v2024.05.15/clj-kondo-linux-amd64.zip
+        unzip -o clj-kondo-linux-amd64.zip -d clj-kondo
+        sudo mv clj-kondo/clj-kondo /usr/local/bin/
+        clj-kondo --lint src test
 
     - name: Run tests
       run: clojure -T:build test
