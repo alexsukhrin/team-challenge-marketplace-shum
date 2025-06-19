@@ -30,7 +30,7 @@
   (migratus/rollback (migratus-config)))
 
 (defn create [name]
-  (migratus/create config name))
+  (migratus/create (migratus-config) name))
 
 (comment
   
