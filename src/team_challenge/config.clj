@@ -13,9 +13,12 @@
 
 (declare ^:dynamic *config*)
 
+(defn load-config []
+  (read-config (str "config/" (env! "APP_ENV" "dev") ".edn")))
+
 (defstate ^:dynamic *config*
   :start
-  (read-config (str "config/" (env! "APP_ENV") ".edn")))
+  (load-config))
 
 (comment
 
