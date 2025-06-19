@@ -3,6 +3,8 @@
             [team-challenge.config :refer [*config*]]
             [hikari-cp.core :as cp]))
 
+(declare ^:dynamic *db*)
+
 (defstate ^:dynamic *db*
   :start (let [store (cp/make-datasource (-> *config* :db :hikari))]
            {:datasource store})

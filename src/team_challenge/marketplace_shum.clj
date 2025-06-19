@@ -28,5 +28,5 @@
 
 (defn -main
   "Start system"
-  [& args]
+  []
   (start-system))

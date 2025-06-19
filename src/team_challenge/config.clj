@@ -11,6 +11,8 @@
    (or (System/getenv varname)
        default)))
 
+(declare ^:dynamic *config*)
+
 (defstate ^:dynamic *config*
   :start
   (read-config (str "config/" (env! "APP_ENV") ".edn")))
