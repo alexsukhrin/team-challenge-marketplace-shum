@@ -1,13 +1,29 @@
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.12.1"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.1"}
+        aero/aero {:mvn/version "1.1.6"}
+        mount/mount {:mvn/version "0.1.23"}
+        migratus/migratus {:mvn/version "1.6.4"}
+        org.postgresql/postgresql {:mvn/version "42.7.2"}
+        hikari-cp/hikari-cp {:mvn/version "3.0.1"}
+        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}}
  :aliases
- {:run-m {:main-opts ["-m" "team-challenge.marketplace-shum"]}
+ {:migrate 
+  {:deps {migratus/migratus {:mvn/version "1.6.4"} 
+          org.postgresql/postgresql {:mvn/version "42.6.0"}
+          aero/aero {:mvn/version "1.1.6"}}
+   :ns-default migration}
+  :run-m {:main-opts ["-m" "team-challenge.marketplace-shum"]}
   :run-x {:ns-default team-challenge.marketplace-shum
           :exec-fn greet
           :exec-args {:name "Clojure"}}
   :build {:deps {io.github.clojure/tools.build 
                  {:mvn/version "0.9.6"}}
           :ns-default build}
+  :repl {:extra-deps {nrepl/nrepl {:mvn/version "1.1.0"}
+                      cider/cider-nrepl {:mvn/version "0.56.0"}}
+         :main-opts ["-m" "nrepl.cmdline"
+                     "--port" "7888"
+                     "--interactive"]}
   :test {:extra-paths ["test"]
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
                       io.github.cognitect-labs/test-runner
