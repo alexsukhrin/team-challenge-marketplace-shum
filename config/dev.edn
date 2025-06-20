@@ -1,0 +1,19 @@
+{:db 
+ {:migratus 
+  {:dbtype            "postgresql" 
+   :dbname            #env DEV_DB_NAME
+   :host              #env DEV_DB_HOST
+   :user              #env DEV_DB_USER
+   :password          #env DEV_DB_PASS}
+  
+  :hikari 
+  {:adapter           "postgresql" 
+   :database-name     #env DEV_DB_NAME 
+   :server-name       #env DEV_DB_HOST 
+   :port-number       5432 
+   :minimum-idle      10 
+   :maximum-pool-size 10 
+   :auto-commit       true 
+   :username          #env DEV_DB_USER 
+   :password          #env DEV_DB_PASS
+   :pool-name         "marketplace-pool"}}}

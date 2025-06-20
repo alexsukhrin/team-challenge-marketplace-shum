@@ -26,3 +26,10 @@
 /checkouts
 /classes
 /target
+
+env
+.env
+
+/.clj-kondo
+/.cpcache
+/.nrepl-port

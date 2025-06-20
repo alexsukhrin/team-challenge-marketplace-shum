@@ -35,6 +35,12 @@
 
 Download from https://github.com/team-challenge/marketplace-shum
 
+## Migratus
+
+clj -Am:migrate migrate
+clj -Am:migrate rollback
+clj -Am:migrate reset
+
 ## Usage
 
 Run the project directly, via `:exec-fn`:
