@@ -1,19 +1,15 @@
-{:db 
- {:migratus 
-  {:dbtype            "postgresql" 
-   :dbname            #env DEV_DB_NAME
-   :host              #env DEV_DB_HOST
-   :user              #env DEV_DB_USER
-   :password          #env DEV_DB_PASS}
-  
-  :hikari 
-  {:adapter           "postgresql" 
-   :database-name     #env DEV_DB_NAME 
-   :server-name       #env DEV_DB_HOST 
-   :port-number       5432 
-   :minimum-idle      10 
-   :maximum-pool-size 10 
-   :auto-commit       true 
-   :username          #env DEV_DB_USER 
-   :password          #env DEV_DB_PASS
-   :pool-name         "marketplace-pool"}}}
+{:http-port 8080
+ :datomic
+ {:server-type :dev-local 
+  :system "marketplace" 
+  :storage-dir :mem
+  :db-name "shum"}
+ :web-server
+ {:port 3000}
+ :jwt-secret "your-super-secret-key-for-dev"
+ :email {:host "#profile {:default \"smtp.gmail.com\" :env \"EMAIL_HOST\"}"
+         :port "#profile {:default 587 :env-type \"int\" :env \"EMAIL_PORT\"}"
+         :user "#profile {:env \"EMAIL_USER\"}"
+         :pass "#profile {:env \"EMAIL_PASS\"}"
+         :from "#profile {:default \"no-reply@marketplace.com\" :env \"EMAIL_FROM\"}"}
+ :app {:base-url "#profile {:default \"http://localhost:8080\" :env \"BASE_URL\"}"}}

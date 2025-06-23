@@ -8,5 +8,5 @@ else
   echo "⚠️  .env file not found, skipping"
 fi
 
-echo "🟢 Starting nREPL on port 7888..."
-clj -M:repl
+echo "🟢 Starting REPL in team-challenge.marketplace-shum namespace..."
+clj -M:dev
