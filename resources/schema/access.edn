@@ -1,0 +1,15 @@
+[
+ {:db/ident :user/roles
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/many
+  :db/doc "Roles user's"}
+
+ {:db/ident :user/permissions
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/many
+  :db/doc "Permissions user's"}
+
+ ;; -- Enums
+ {:db/ident :role/admin}
+ {:db/ident :permission/manage-users}
+]
