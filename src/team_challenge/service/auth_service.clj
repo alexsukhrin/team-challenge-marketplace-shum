@@ -25,7 +25,8 @@
   (hashers/check password-to-check hashed-password))
 
 ;;; Token Creation
-(defn- create-token [claims] (jwt/sign claims (secret)))
+(defn- create-token [claims]
+  (jwt/sign claims (secret) {:alg :hs256}))
 
 (defn create-access-token
   "Creates a short-lived access token."
