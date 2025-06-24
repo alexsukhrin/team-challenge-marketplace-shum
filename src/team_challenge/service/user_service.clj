@@ -5,6 +5,9 @@
             [clj-time.core :as t]
             [team-challenge.domain.user :as domain-user]))
 
+(def dummy-hash
+  "$2a$10$7EqJtq98hPqEX7fNZaFWoO5e5p8Y8QZC1Z2ZQFQFQFQFQFQFQFQFQ") ; bcrypt for "password"
+
 (defn- create-token-pair [user]
   {:access-token (auth-service/create-access-token user)
    :refresh-token (auth-service/create-refresh-token user)})
@@ -27,10 +30,13 @@
 (defn login
   "Verifies credentials and returns a token pair if they are valid."
   [email password]
-  (when-let [user (user-repo/find-user-by-email email)]
-    (when (and (:user/id user)
+  (let [user (user-repo/find-user-by-email email)
+        password-hash (cond
+                        (and user (:user/email-confirmed? user)) (:auth/password-hash user)
+                        :else dummy-hash)]
+    (when (and user
                (:user/email-confirmed? user)
-               (auth-service/verify-password password (:auth/password-hash user)))
+               (auth-service/verify-password password password-hash))
       (create-token-pair user))))
 
 (defn logout
