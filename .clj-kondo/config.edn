@@ -1,0 +1,8 @@
+{:config-paths ["imports/mount/mount"]
+ :linters
+ {:unresolved-var
+  {:exclude [mount.core/defstate
+             db/conn
+             db/client
+             web/http-server
+             config/*config*]}}}
