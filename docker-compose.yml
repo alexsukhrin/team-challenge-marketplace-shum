@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # This tells the app to use the production config via the -DENV=prod flag in the Dockerfile CMD
+      # You can add other non-secret env vars here if needed.
+      - DUMMY_VAR=true
+    env_file:
+      # This file contains secrets and other environment-specific variables
+      - .env
+    depends_on:
+      - datomic
+    restart: unless-stopped
+
+  datomic:
+    # This image works for both Datomic Pro and the free Starter Edition
+    image: datomic/datomic-pro:1.0.6222
+    ports:
+      # Port for clients (your app) to connect
+      - "8182:8182"
+    volumes:
+      # Mount the properties file into the container
+      - ./datomic/transactor.properties:/opt/datomic/config/transactor.properties
+      # Mount a volume to persist database data
+      - datomic_data:/var/datomic/data
+    command: ["-Xmx1g", "-Xms1g", "/opt/datomic/config/transactor.properties"]
+    restart: unless-stopped
+
+volumes:
+  datomic_data: 
