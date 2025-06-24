@@ -7,7 +7,7 @@
             [clj-time.core :as t]
             [team-challenge.repository.auth-repository :as auth-repo]))
 
-(def ^:private secret (:jwt-secret @config/*config*))
+(def ^:private secret (:jwt-secret config/*config*))
 (def ^:private access-token-lifetime (t/minutes 15))
 (def ^:private refresh-token-lifetime (t/days 7))
 
@@ -40,7 +40,7 @@
                              :user-id (:user/id user)
                              :jti jti
                              :exp (t/plus (t/now) refresh-token-lifetime)})]
-    @(d/transact db/conn {:tx-data [{:auth/refresh-token (str jti)}]})
+    (d/transact db/conn {:tx-data [{:auth/refresh-token (str jti)}]})
     token))
 
 ;;; Token Verification
@@ -73,3 +73,10 @@
   "Adds a refresh token's JTI to the revoked list."
   [jti]
   (auth-repo/add-refresh-token-to-revoked-list! jti)) 
+
+
+(comment
+  
+  (verify-password "password1986" "bcrypt+sha512$14262d9e4dc8f53a98334a43abe2de30$12$926c63920d43b630e9245cbd39fdb7fad94160fcc6dc6b01")
+  
+  )

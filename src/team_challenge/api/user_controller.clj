@@ -68,10 +68,11 @@
 (defn login-handler
   "Handles user login and returns a JWT."
   [request]
-  (let [{:keys [email password]} (:body-params request)]
+  (let [{:keys [email password]} (:body request)]
     (if-let [tokens (user-service/login email password)]
       {:status 200 :body tokens}
-      {:status 401 :body {:message "Invalid credentials or email not confirmed"}})))
+      {:status 401 :body {:error "unauthorized"
+                          :message "Invalid credentials or email not confirmed"}})))
 
 (defn logout-handler
   "Handles user logout."
@@ -81,7 +82,8 @@
     (if token
       (do (user-service/logout token)
           {:status 200 :body {:message "Logged out successfully"}})
-      {:status 400 :body {:message "Token not provided"}})))
+      {:status 400 :body {:error "token_missing"
+                          :message "Token not provided"}})))
 
 (defn refresh-token-handler
   "Handles token refreshment."
@@ -89,7 +91,8 @@
   (let [refresh-token (get-in request [:body-params :refresh-token])]
     (if-let [tokens (user-service/refresh-tokens refresh-token)]
       {:status 200 :body tokens}
-      {:status 401 :body {:message "Invalid or expired refresh token"}})))
+      {:status 401 :body {:error "invalid_token"
+                          :message "Invalid or expired refresh token"}})))
 
 (defn request-password-reset-handler
   "Handles password reset requests."
@@ -98,7 +101,8 @@
     (if-let [token (user-service/request-password-reset email)]
       {:status 200 :body {:message "Password reset token sent (for dev, here is the token)"
                           :token token}}
-      {:status 404 :body {:message "User with this email not found"}})))
+      {:status 404 :body {:error "not_found"
+                          :message "User with this email not found"}})))
 
 (defn reset-password-handler
   "Handles password reset submissions."
@@ -106,15 +110,17 @@
   (let [{:keys [token password]} (:body-params request)]
     (if (user-service/reset-password token password)
       {:status 200 :body {:message "Password has been reset successfully"}}
-      {:status 400 :body {:message "Invalid or expired token"}})))
+      {:status 400 :body {:error "invalid_token"
+                          :message "Invalid or expired token"}})))
 
 (defn confirm-email-handler
   "Handles email confirmation."
   [request]
-  (let [token (get-in request [:body-params :token])]
+  (let [token (get-in request [:query-params :token])]
     (if (user-service/confirm-email token)
       {:status 200 :body {:message "Email confirmed successfully. You can now log in."}}
-      {:status 400 :body {:message "Invalid or expired confirmation token."}})))
+      {:status 400 :body {:error "invalid_token"
+                          :message "Invalid or expired confirmation token."}})))
 
 (defn get-current-user-handler
   "Retrieves the current user's information from the JWT."

@@ -5,7 +5,8 @@
    [reitit.swagger-ui :as swagger-ui]
    [team-challenge.api.middleware :as middleware]
    [team-challenge.api.user-controller :as user-controller]
-   [reitit.coercion.spec :as spec-coercion]))
+   [reitit.coercion.spec :as spec-coercion]
+   [reitit.ring.middleware.parameters :refer [parameters-middleware]]))
 
 (def default-options-handler
   {:options {:handler (fn [_] {:status 200})}})
@@ -14,7 +15,9 @@
   [middleware/wrap-cors
    middleware/wrap-exceptions
    middleware/wrap-json-response
-   middleware/wrap-json-body])
+   middleware/wrap-json-body
+   parameters-middleware
+   middleware/wrap-keyword-query-params])
 
 ;; --------------------------
 ;; Swagger routes
@@ -63,9 +66,9 @@
      :options default-options-handler}]
 
    ["/confirm-email"
-    {:post {:summary "Confirm email with token"
-            :parameters {:body ::user-controller/confirm-email-params}
-            :handler #'user-controller/confirm-email-handler}
+    {:get {:summary "Confirm email with token"
+           :parameters {:query ::user-controller/confirm-email-params}
+           :handler #'user-controller/confirm-email-handler}
      :options default-options-handler}]
 
    ["/logout"
