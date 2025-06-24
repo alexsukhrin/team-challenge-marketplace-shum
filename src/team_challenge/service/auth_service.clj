@@ -7,7 +7,9 @@
             [clj-time.core :as t]
             [team-challenge.repository.auth-repository :as auth-repo]))
 
-(def ^:private secret (:jwt-secret config/*config*))
+(defn secret []
+  (:jwt-secret config/*config*))
+
 (def ^:private access-token-lifetime (t/minutes 15))
 (def ^:private refresh-token-lifetime (t/days 7))
 
@@ -23,7 +25,7 @@
   (hashers/check password-to-check hashed-password))
 
 ;;; Token Creation
-(defn- create-token [claims] (jwt/sign claims secret))
+(defn- create-token [claims] (jwt/sign claims (secret)))
 
 (defn create-access-token
   "Creates a short-lived access token."
@@ -46,7 +48,7 @@
 ;;; Token Verification
 (defn- verify-token [token]
   (try
-    (jwt/unsign token secret)
+    (jwt/unsign token (secret))
     (catch Exception _ nil)))
 
 (defn verify-access-token
