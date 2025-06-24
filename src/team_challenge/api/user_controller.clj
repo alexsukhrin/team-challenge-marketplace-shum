@@ -78,12 +78,23 @@
   "Handles user logout."
   [request]
   (let [auth-header (get-in request [:headers "authorization"])
-        token (some-> auth-header (str/split #" ") second)]
-    (if token
-      (do (user-service/logout token)
-          {:status 200 :body {:message "Logged out successfully"}})
+        [scheme token] (when auth-header (str/split auth-header #" " 2))]
+    (cond
+      (nil? auth-header)
       {:status 400 :body {:error "token_missing"
-                          :message "Token not provided"}})))
+                          :message "Authorization header is required"}}
+
+      (not= (str/lower-case scheme) "bearer")
+      {:status 400 :body {:error "invalid_scheme"
+                          :message "Authorization scheme must be Bearer"}}
+
+      (or (nil? token) (str/blank? token))
+      {:status 400 :body {:error "token_missing"
+                          :message "Bearer token is missing"}}
+
+      :else
+      (do (user-service/logout token)
+          {:status 200 :body {:message "Logged out successfully"}}))))
 
 (defn refresh-token-handler
   "Handles token refreshment."
