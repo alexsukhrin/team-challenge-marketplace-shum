@@ -49,5 +49,4 @@
   (def user-name "Олександр")
   (def email-config (get config/*config* :email))
   (def email-message (create-confirmation-email to token user-name))
-  (postal/send-message email-config email-message)
-  )
+  (postal/send-message email-config email-message))

@@ -1,6 +1,5 @@
 (ns team-challenge.domain.user
-  (:require [buddy.hashers :as hashers]
-            [buddy.sign.jwt :as jwt]))
+  (:require [buddy.hashers :as hashers]))
 
 (defrecord User [first-name last-name email password])
 

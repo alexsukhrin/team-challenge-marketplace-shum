@@ -29,12 +29,12 @@
            :swagger {:info {:title "Marketplace API"
                             :description "swagger api docs"}
                      :securityDefinitions {:apiAuth {:type :apiKey
-                                                       :in :header
-                                                       :name "authorization"}}
+                                                     :in :header
+                                                     :name "authorization"}}
                      :tags [{:name "auth" :description "registration and authorization routes api"}]}
            :handler (swagger/create-swagger-handler)}
      :options default-options-handler}]
-   
+
    ["/api-docs/*"
     {:get {:no-doc true
            :handler (swagger-ui/create-swagger-ui-handler {:url "/swagger.json"})}
@@ -134,8 +134,7 @@
                    :handler (fn [_] {:status 200})}}
      ;; Add sections here
      swagger-routes
-     api-routes
-     ]]
+     api-routes]]
    {:data {:coercion spec-coercion/coercion}
     :exception
     {:coercion

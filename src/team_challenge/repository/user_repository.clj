@@ -9,16 +9,16 @@
         profile-id (java.util.UUID/randomUUID)
         hashed-password (auth-service/hash-password password)]
     (d/transact db/conn
-      {:tx-data [{:db/id user-tempid
-                  :user/id user-id
-                  :user/email email
-                  :user/email-confirmed? false
-                  :auth/password-hash hashed-password
-                  :user/created-at (java.util.Date.)}
-                 {:user-profile/id profile-id
-                  :user-profile/user user-tempid
-                  :user-profile/first-name first_name
-                  :user-profile/last-name last_name}]})
+                {:tx-data [{:db/id user-tempid
+                            :user/id user-id
+                            :user/email email
+                            :user/email-confirmed? false
+                            :auth/password-hash hashed-password
+                            :user/created-at (java.util.Date.)}
+                           {:user-profile/id profile-id
+                            :user-profile/user user-tempid
+                            :user-profile/first-name first_name
+                            :user-profile/last-name last_name}]})
     {:user/id user-id
      :user/email email
      :user-profile/id profile-id
@@ -28,10 +28,10 @@
 (defn find-user-by-email [email]
   (let [db (d/db db/conn)
         eid (ffirst
-              (d/q '[:find ?e
-                     :in $ ?email
-                     :where [?e :user/email ?email]]
-                   db email))]
+             (d/q '[:find ?e
+                    :in $ ?email
+                    :where [?e :user/email ?email]]
+                  db email))]
     (when eid
       (d/pull db
               '[*
@@ -48,9 +48,9 @@
 
 (defn set-confirmation-token! [user-id token expires-at]
   (d/transact db/conn
-               {:tx-data [{:db/id [:user/id user-id]
-                           :user/email-confirmation-token token
-                           :user/email-confirmation-token-expires-at expires-at}]}))
+              {:tx-data [{:db/id [:user/id user-id]
+                          :user/email-confirmation-token token
+                          :user/email-confirmation-token-expires-at expires-at}]}))
 
 (defn find-user-by-reset-token [token]
   (let [db (d/db db/conn)]
@@ -80,15 +80,14 @@
 (defn confirm-user-email! [user-id]
   (let [db (d/db db/conn)
         eid (ffirst (d/q '[:find ?e :in $ ?user-id :where [?e :user/id ?user-id]] db user-id))
-        user (d/pull db '[ :user/email-confirmation-token :user/email-confirmation-token-expires-at ] eid)
+        user (d/pull db '[:user/email-confirmation-token :user/email-confirmation-token-expires-at] eid)
         token (:user/email-confirmation-token user)
         expires-at (:user/email-confirmation-token-expires-at user)]
     (d/transact db/conn
-      {:tx-data (cond-> [{:db/id [:user/id user-id]
-                          :user/email-confirmed? true}]
-                 token (conj [:db/retract [:user/id user-id] :user/email-confirmation-token token])
-                 expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at]))})))
-
+                {:tx-data (cond-> [{:db/id [:user/id user-id]
+                                    :user/email-confirmed? true}]
+                            token (conj [:db/retract [:user/id user-id] :user/email-confirmation-token token])
+                            expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at]))})))
 
 (comment
 
@@ -108,8 +107,6 @@
 
   (d/q '[:find ?e :where [?e :user/email]] (d/db db/conn))
 
-  (d/entity (d/db db/conn) :db/doc)
-
   (d/q '[:find (count ?e) . :where [?e :user/email]] (d/db db/conn))
 
   (d/list-databases db/client {})
@@ -123,7 +120,6 @@
   (def last_name "Sukhryn")
   (def email "alexandrvirtual@gmail.com")
   (def hashed-password (auth-service/hash-password "password"))
-
 
   (d/transact db/conn {:tx-data [{:db/id user-tempid
                                   :user/id user-id
@@ -151,22 +147,20 @@
                          db email))]
     (when eid
       (d/pull db '[*] eid)))
-  
+
   (find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63")
 
   (def token "c9081132-9937-4f99-ba2b-2afa8242af63")
 
-  (d/q '[:find ?e . 
-         :in $ ?token 
-         :where [?e :user/email-confirmation-token ?token]] 
+  (d/q '[:find ?e .
+         :in $ ?token
+         :where [?e :user/email-confirmation-token ?token]]
        db token)
-  
-  (d/q '[:find ?e
-       :in $ ?token
-       :where
-       [?e :user/email-confirmation-token ?token]]
-     db token)
-  
-  (find-user-by-email email)
 
-  )
+  (d/q '[:find ?e
+         :in $ ?token
+         :where
+         [?e :user/email-confirmation-token ?token]]
+       db token)
+
+  (find-user-by-email email))

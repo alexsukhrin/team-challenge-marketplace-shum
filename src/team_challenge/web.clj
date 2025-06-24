@@ -3,8 +3,7 @@
             [org.httpkit.server :as http-kit]
             [team-challenge.config :as config]
             [team-challenge.api.routes :as routes]
-            [reitit.ring :as ring]
-            [ring.middleware.cors :as cors]))
+            [reitit.ring :as ring]))
 
 (defstate http-server
   :start

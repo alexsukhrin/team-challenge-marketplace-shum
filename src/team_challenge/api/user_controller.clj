@@ -1,7 +1,7 @@
 (ns team-challenge.api.user-controller
   (:require [team-challenge.service.user-service :as user-service]
             [clojure.spec.alpha :as s]
-            [reitit.coercion.spec :as spec-coercion]))
+            [clojure.string :as str]))
 
 (defn spec-errors->messages [explain-data]
   (let [problems (:clojure.spec.alpha/problems explain-data)
@@ -78,7 +78,7 @@
   "Handles user logout."
   [request]
   (let [auth-header (get-in request [:headers "authorization"])
-        token (some-> auth-header (clojure.string/split #" ") second)]
+        token (some-> auth-header (str/split #" ") second)]
     (if token
       (do (user-service/logout token)
           {:status 200 :body {:message "Logged out successfully"}})
@@ -128,13 +128,11 @@
   (let [identity (:identity request)]
     {:status 200 :body {:user identity}}))
 
-
-(comment 
+(comment
   (def user-data {:first_name "Alexandr",
                   :last_name "Sukhryn",
                   :email "alexandrvirtual@gmail.com",
                   :password "password1986"})
   (s/valid? ::register-params user-data)
 
-  (register-user-handler {:body user-data})
-  )
+  (register-user-handler {:body user-data}))

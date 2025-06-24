@@ -3,8 +3,8 @@
             [ring.util.response :as response]
             [ring.middleware.cors :as cors]
             [team-challenge.service.auth-service :as auth-service]
-            [clojure.walk :as walk])
-  (:import [java.util UUID]))
+            [clojure.walk :as walk]
+            [clojure.string :as str]))
 
 (defn wrap-json-body
   "Parses JSON requests and keywordizes keys."
@@ -25,7 +25,7 @@
   [handler]
   (fn [request]
     (if-let [token (some-> (get-in request [:headers "authorization"])
-                           (clojure.string/split #" ")
+                           (str/split #" ")
                            second)]
       (if-let [claims (auth-service/verify-access-token token)]
         (handler (assoc request :identity claims))
@@ -49,11 +49,11 @@
   "Middleware to handle CORS requests."
   [handler]
   (cors/wrap-cors handler
-    :access-control-allow-origin [#".*"]
-    :access-control-allow-methods [:get :put :post :delete]))
+                  :access-control-allow-origin [#".*"]
+                  :access-control-allow-methods [:get :put :post :delete]))
 
 (defn wrap-keyword-query-params
   "Middleware to keywordize all query params."
   [handler]
   (fn [request]
-    (handler (update request :query-params walk/keywordize-keys)))) 
+    (handler (update request :query-params walk/keywordize-keys))))
