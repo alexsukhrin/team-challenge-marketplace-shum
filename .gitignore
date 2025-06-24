@@ -30,6 +30,5 @@
 env
 .env
 
-/.clj-kondo
 /.cpcache
 /.nrepl-port
