@@ -5,7 +5,7 @@
 
 (defn create-user! [{:keys [email password first_name last_name]}]
   (let [user-id (java.util.UUID/randomUUID)
-        user-tempid -1000001 ; tempid для Datomic Client API
+        user-tempid (- (rand-int 1000000000)) ; унікальний tempid для кожної транзакції
         profile-id (java.util.UUID/randomUUID)
         hashed-password (auth-service/hash-password password)]
     (d/transact db/conn
