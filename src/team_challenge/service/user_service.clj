@@ -14,7 +14,7 @@
   [user-data]
   (if (user-repo/find-user-by-email (:email user-data))
     (throw (ex-info "Email already exists" {:type :email-conflict
-                                             :email (:email user-data)}))
+                                            :email (:email user-data)}))
     (let [user (user-repo/create-user! user-data)
           confirmation-token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))
@@ -93,9 +93,6 @@
   (def confirmation-token (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at))
   (def confirmation-email (email-service/send-confirmation-email (:user/email user) confirmation-token (str (:user-profile/first-name user) " " (:user-profile/last-name user))))
 
-
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63")
-
-  )
+  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63"))

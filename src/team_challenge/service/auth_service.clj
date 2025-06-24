@@ -72,11 +72,8 @@
 (defn revoke-refresh-token!
   "Adds a refresh token's JTI to the revoked list."
   [jti]
-  (auth-repo/add-refresh-token-to-revoked-list! jti)) 
-
+  (auth-repo/add-refresh-token-to-revoked-list! jti))
 
 (comment
-  
-  (verify-password "password1986" "bcrypt+sha512$14262d9e4dc8f53a98334a43abe2de30$12$926c63920d43b630e9245cbd39fdb7fad94160fcc6dc6b01")
-  
-  )
+
+  (verify-password "password1986" "bcrypt+sha512$14262d9e4dc8f53a98334a43abe2de30$12$926c63920d43b630e9245cbd39fdb7fad94160fcc6dc6b01"))

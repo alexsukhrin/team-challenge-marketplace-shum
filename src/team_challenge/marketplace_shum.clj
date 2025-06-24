@@ -2,8 +2,7 @@
   (:require [mount.core :as mount]
             [team-challenge.config :as config]
             [team-challenge.web :as web]
-            [team-challenge.db :as db]
-            [reitit.ring :as ring])
+            [team-challenge.db :as db])
   (:gen-class))
 
 (defn start-config []
@@ -52,5 +51,4 @@
   (mount/running-states)
 
   (start-system)
-  (stop-system)
-  )
+  (stop-system))
