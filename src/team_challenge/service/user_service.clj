@@ -28,7 +28,8 @@
   "Verifies credentials and returns a token pair if they are valid."
   [email password]
   (when-let [user (user-repo/find-user-by-email email)]
-    (when (and (:user/email-confirmed? user)
+    (when (and (:user/id user)
+               (:user/email-confirmed? user)
                (auth-service/verify-password password (:auth/password-hash user)))
       (create-token-pair user))))
 
@@ -70,17 +71,20 @@
   "Confirms a user's email by token."
   [token]
   (when-let [user (user-repo/find-user-by-confirmation-token token)]
-    (let [expires-at (:user/email-confirmation-token-expires-at user)]
-      (when (t/before? (t/now) expires-at)
+    (let [expires-at (:user/email-confirmation-token-expires-at user)
+          expires-at-joda (if (instance? java.util.Date expires-at)
+                            (org.joda.time.DateTime. ^java.util.Date expires-at)
+                            expires-at)]
+      (when (t/before? (t/now) expires-at-joda)
         (user-repo/confirm-user-email! (:user/id user))
         true))))
 
 (comment
 
   (def user (register-user {:first_name "alexandr"
-                             :last_name "sukhryn"
-                             :email "alexandrvirtual@gmail.com"
-                             :password "password1986"}))
+                            :last_name "sukhryn"
+                            :email "alexandrvirtual@gmail.com"
+                            :password "password1986"}))
 
   (:user/id user)
 
@@ -89,6 +93,9 @@
   (def confirmation-token (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at))
   (def confirmation-email (email-service/send-confirmation-email (:user/email user) confirmation-token (str (:user-profile/first-name user) " " (:user-profile/last-name user))))
 
-  
+
   (login "alexandrvirtual@gmail.com" "password1986")
+
+  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63")
+
   )
