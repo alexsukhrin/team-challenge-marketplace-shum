@@ -24,13 +24,29 @@
   "Middleware to authenticate a request using a JWT in the Authorization header."
   [handler]
   (fn [request]
-    (if-let [token (some-> (get-in request [:headers "authorization"])
-                           (str/split #" ")
-                           second)]
-      (if-let [claims (auth-service/verify-access-token token)]
-        (handler (assoc request :identity claims))
-        (unauthorized-response))
-      (unauthorized-response))))
+    (let [auth-header (get-in request [:headers "authorization"])
+          [scheme token] (when auth-header (str/split auth-header #" " 2))]
+      (cond
+        (nil? auth-header)
+        (-> (response/response {:error "token_missing"
+                                :message "Authorization header is required"})
+            (response/status 401))
+
+        (not= (str/lower-case scheme) "bearer")
+        (-> (response/response {:error "invalid_scheme"
+                                :message "Authorization scheme must be Bearer"})
+            (response/status 401))
+
+        (or (nil? token) (str/blank? token))
+        (-> (response/response {:error "token_missing"
+                                :message "Bearer token is missing"})
+            (response/status 401))
+
+        :else
+        (if-let [claims (auth-service/verify-access-token token)]
+          (handler (assoc request :identity claims))
+          (-> (response/response {:message "Unauthorized"})
+              (response/status 401)))))))
 
 (defn wrap-exceptions
   "Middleware that catches exceptions and returns a 500 response."
