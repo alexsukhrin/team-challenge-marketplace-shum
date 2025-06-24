@@ -3,11 +3,11 @@
   :access-key "shum_access"
   :secret "shum_secret"
   ;; 'datomic' is the service name from docker-compose.yml
-  :endpoint "datomic:8182"
+  :endpoint "datomic:8998"
   :db-name "shum"}
 
  :web-server
- {:port 3000}
+ {:port 4000}
 
  :jwt-secret "#env JWT_SECRET"
 

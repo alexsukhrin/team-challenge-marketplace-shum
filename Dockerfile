@@ -6,6 +6,7 @@ WORKDIR /app
 COPY deps.edn .
 COPY src src
 COPY resources resources
+COPY config config
 
 # Create the uberjar
 RUN clj -X:uberjar
