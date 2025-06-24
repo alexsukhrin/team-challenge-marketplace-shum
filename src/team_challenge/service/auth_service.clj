@@ -30,9 +30,11 @@
 (defn create-access-token
   "Creates a short-lived access token."
   [user]
-  (create-token {:type :access
-                 :user-id (:user/id user)
-                 :exp (t/plus (t/now) access-token-lifetime)}))
+  (let [jti (str (java.util.UUID/randomUUID))]
+    (create-token {:type :access
+                   :user-id (:user/id user)
+                   :jti jti
+                   :exp (t/plus (t/now) access-token-lifetime)})))
 
 (defn create-refresh-token
   "Creates a long-lived refresh token."
@@ -55,15 +57,19 @@
   "Verifies an access token and checks if it's blacklisted."
   [token]
   (when-let [claims (verify-token token)]
-    (when-not (auth-repo/is-token-blacklisted? (:jti claims))
-      claims)))
+    (let [jti (:jti claims)]
+      (when (some? jti)
+        (when-not (auth-repo/is-token-blacklisted? jti)
+          claims)))))
 
 (defn verify-refresh-token
   "Verifies a refresh token and checks if it has been revoked."
   [token]
   (when-let [claims (verify-token token)]
-    (when-not (auth-repo/is-refresh-token-revoked? (:jti claims))
-      claims)))
+    (let [jti (:jti claims)]
+      (when (some? jti)
+        (when-not (auth-repo/is-refresh-token-revoked? jti)
+          claims)))))
 
 ;;; Token Revocation
 (defn blacklist-token!
