@@ -1,11 +1,21 @@
-{:http-port 8080
- :datomic {:server-type :dev-local
-           :system "marketplace"
-           :storage-dir "/var/datomic"
-           :db-name "shum"}
- :email {:host "#profile {:env \"EMAIL_HOST\"}"
-         :port "#profile {:env-type \"int\" :env \"EMAIL_PORT\"}"
-         :user "#profile {:env \"EMAIL_USER\"}"
-         :pass "#profile {:env \"EMAIL_PASS\"}"
-         :from "#profile {:env \"EMAIL_FROM\"}"}
- :app {:base-url "#profile {:env \"BASE_URL\"}"}}
+{:datomic
+ {:server-type :peer-server
+  :access-key "shum_access"
+  :secret "shum_secret"
+  ;; 'datomic' is the service name from docker-compose.yml
+  :endpoint "datomic:8182"
+  :db-name "shum"}
+
+ :web-server
+ {:port 3000}
+
+ :jwt-secret "#env JWT_SECRET"
+
+ :email {:host   "#env EMAIL_HOST"
+         :port   #long #or [#env EMAIL_PORT 587]
+         :user   "#env EMAIL_USER"
+         :pass   "#env EMAIL_PASS"
+         :from   "#or [#env EMAIL_FROM \"no-reply@marketplace.com\"]"
+         :tls    #boolean #or [#env EMAIL_TLS true]}
+
+ :app {:base-url "#env BASE_URL"}}

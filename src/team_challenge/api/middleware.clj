@@ -5,9 +5,9 @@
             [team-challenge.service.auth-service :as auth-service]))
 
 (defn wrap-json-body
-  "Parses JSON requests."
-  ([handler] (json/wrap-json-body handler))
-  ([handler opts] (json/wrap-json-body handler opts)))
+  "Parses JSON requests and keywordizes keys."
+  [handler]
+  (json/wrap-json-body handler {:keywords? true}))
 
 (defn wrap-json-response
   "Middleware to serialize JSON responses."

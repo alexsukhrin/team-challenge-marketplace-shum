@@ -2,7 +2,8 @@
   (:require [team-challenge.repository.user-repository :as user-repo]
             [team-challenge.service.auth-service :as auth-service]
             [team-challenge.service.email-service :as email-service]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [team-challenge.domain.user :as domain-user]))
 
 (defn- create-token-pair [user]
   {:access-token (auth-service/create-access-token user)
@@ -11,12 +12,17 @@
 (defn register-user
   "Creates a new user and sends a confirmation email."
   [user-data]
-  (let [user (user-repo/create-user! user-data)
-        confirmation-token (str (java.util.UUID/randomUUID))
-        expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))]
-    (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at)
-    (email-service/send-confirmation-email (:user/email user) confirmation-token)
-    user))
+  (if (user-repo/find-user-by-email (:email user-data))
+    (throw (ex-info "Email already exists" {:type :email-conflict
+                                             :email (:email user-data)}))
+    (let [user (user-repo/create-user! user-data)
+          confirmation-token (str (java.util.UUID/randomUUID))
+          expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))
+          user-name (domain-user/full-name {:first-name (:user-profile/first-name user)
+                                            :last-name (:user-profile/last-name user)})]
+      (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at)
+      (email-service/send-confirmation-email (:user/email user) confirmation-token user-name)
+      user)))
 
 (defn login
   "Verifies credentials and returns a token pair if they are valid."
@@ -70,9 +76,19 @@
         true))))
 
 (comment
+
+  (def user (register-user {:first_name "alexandr"
+                             :last_name "sukhryn"
+                             :email "alexandrvirtual@gmail.com"
+                             :password "password1986"}))
+
+  (:user/id user)
+
+  (def confirmation-token (str (java.util.UUID/randomUUID)))
+  (def expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
+  (def confirmation-token (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at))
+  (def confirmation-email (email-service/send-confirmation-email (:user/email user) confirmation-token (str (:user-profile/first-name user) " " (:user-profile/last-name user))))
+
   
-  (register-user {:first_name "alexandr" 
-                 :last_name "sukhryn" 
-                 :email "alexandrvirtual@gmail.com"
-                 :password "password1986"})
+  (login "alexandrvirtual@gmail.com" "password1986")
   )
