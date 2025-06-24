@@ -16,10 +16,6 @@
   [handler]
   (json/wrap-json-response handler))
 
-(defn- unauthorized-response []
-  (-> (response/response {:message "Unauthorized"})
-      (response/status 401)))
-
 (defn wrap-authentication
   "Middleware to authenticate a request using a JWT in the Authorization header."
   [handler]
