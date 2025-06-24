@@ -52,8 +52,7 @@
     {:post {:summary "Register a new user"
             :description "This route does not require authorization."
             :parameters {:body ::user-controller/register-params}
-            :response {200 {:body {:message string?
-                                   :token ::user-controller/refresh-token}}}
+            :response {200 {:body {:message string?}}}
             :handler #'user-controller/register-user-handler}
      :options default-options-handler}]
 

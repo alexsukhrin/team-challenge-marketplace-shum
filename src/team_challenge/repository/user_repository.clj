@@ -3,16 +3,6 @@
             [team-challenge.db :as db]
             [team-challenge.service.auth-service :as auth-service]))
 
-(defn create-user [user]
-  (let [user-id (java.util.UUID/randomUUID)
-        tx-data [(merge
-                   {:user/id user-id
-                    :user/username (:username user)
-                    :user/email (:email user)}
-                   (select-keys user [:auth/password-hash]))]]
-    @(d/transact db/conn {:tx-data tx-data})
-    {:user/id user-id}))
-
 (defn create-user! [{:keys [email password first_name last_name]}]
   (let [user-id (java.util.UUID/randomUUID)
         user-tempid -1000001 ; tempid для Datomic Client API
@@ -36,10 +26,19 @@
      :user-profile/last-name last_name}))
 
 (defn find-user-by-email [email]
-  (d/q '[:find (pull ?e [*]) .
-         :in $ ?email
-         :where [?e :user/email ?email]]
-       (d/db db/conn) email))
+  (let [db (d/db db/conn)
+        eid (ffirst
+              (d/q '[:find ?e
+                     :in $ ?email
+                     :where [?e :user/email ?email]]
+                   db email))]
+    (when eid
+      (d/pull db
+              '[*
+                {:user-profile/_user [:user-profile/id
+                                      :user-profile/first-name
+                                      :user-profile/last-name]}]
+              eid))))
 
 (defn set-password-reset-token! [user-id token expires-at]
   @(d/transact db/conn
@@ -48,22 +47,26 @@
                            :auth/password-reset-token-expires-at expires-at}]}))
 
 (defn set-confirmation-token! [user-id token expires-at]
-  @(d/transact db/conn
+  (d/transact db/conn
                {:tx-data [{:db/id [:user/id user-id]
                            :user/email-confirmation-token token
                            :user/email-confirmation-token-expires-at expires-at}]}))
 
 (defn find-user-by-reset-token [token]
-  (d/q '[:find (pull ?e [*]) .
-         :in $ ?token
-         :where [?e :auth/password-reset-token ?token]]
-       (d/db db/conn) token))
+  (let [db (d/db db/conn)]
+    (when-let [user-eid (d/q '[:find ?e .
+                               :in $ ?token
+                               :where [?e :auth/password-reset-token ?token]]
+                             db token)]
+      (d/pull db '[*] user-eid))))
 
 (defn find-user-by-confirmation-token [token]
-  (d/q '[:find (pull ?e [*]) .
-         :in $ ?token
-         :where [?e :user/email-confirmation-token ?token]]
-       (d/db db/conn) token))
+  (let [db (d/db db/conn)]
+    (when-let [user-eid (d/q '[:find ?e .
+                               :in $ ?token
+                               :where [?e :user/email-confirmation-token ?token]]
+                             db token)]
+      (d/pull db '[*] user-eid))))
 
 (defn update-password! [user-id new-password-hash]
   @(d/transact db/conn
@@ -81,10 +84,83 @@
 
 
 (comment
-  
-  (create-user! {:first_name "alexandr" 
-                 :last_name "sukhryn" 
+
+  (create-user! {:first_name "alexandr"
+                 :last_name "sukhryn"
                  :email "alexandrvirtual@gmail.com"
                  :password "password1986"})
+
+  (d/q '[:find ?a
+         :where [?a :db/ident :user/email]
+         [?a :db/unique ?u]]
+       (d/db db/conn))
+
+  (d/q '[:find ?e
+         :where [?e :user/email "alexandrvirtual@gmail.com"]]
+       (d/db db/conn))
+
+  (d/q '[:find ?e :where [?e :user/email]] (d/db db/conn))
+
+  (d/entity (d/db db/conn) :db/doc)
+
+  (d/q '[:find (count ?e) . :where [?e :user/email]] (d/db db/conn))
+
+  (d/list-databases db/client {})
+
+  (def db (d/db db/conn))
+
+  (def user-tempid -1000001)
+  (def user-id (java.util.UUID/randomUUID))
+  (def profile-id (java.util.UUID/randomUUID))
+  (def first_name "Alexandr")
+  (def last_name "Sukhryn")
+  (def email "alexandrvirtual@gmail.com")
+  (def hashed-password (auth-service/hash-password "password"))
+
+
+  (d/transact db/conn {:tx-data [{:db/id user-tempid
+                                  :user/id user-id
+                                  :user/email email
+                                  :user/email-confirmed? false
+                                  :auth/password-hash hashed-password
+                                  :user/created-at (java.util.Date.)}
+                                 {:user-profile/id profile-id
+                                  :user-profile/user user-tempid
+                                  :user-profile/first-name first_name
+                                  :user-profile/last-name last_name}]})
+
+  (d/q '[:find ?e ?user-id ?confirmed
+         :in $ ?email
+         :where
+         [?e :user/email ?email]
+         [?e :user/id ?user-id]
+         [?e :user/email-confirmed? ?confirmed]]
+       (d/db db/conn) email)
+
+  (let [db (d/db db/conn)
+        eid (ffirst (d/q '[:find ?e
+                           :in $ ?email
+                           :where [?e :user/email ?email]]
+                         db email))]
+    (when eid
+      (d/pull db '[*] eid)))
+
   
+(defn find-user-by-email [email]
+  (let [db (d/db db/conn)
+        eid (ffirst
+              (d/q '[:find ?e
+                     :in $ ?email
+                     :where [?e :user/email ?email]]
+                   db email))]
+    (when eid
+      (d/pull db
+              '[* ;; всі поля користувача
+                {:user-profile/_user [:user-profile/id
+                                      :user-profile/first-name
+                                      :user-profile/last-name]}]
+              eid))))
+
+(find-user-by-email email)
+
   )

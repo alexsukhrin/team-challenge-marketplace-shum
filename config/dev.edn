@@ -1,15 +1,16 @@
 {:http-port 8080
  :datomic
- {:server-type :dev-local 
-  :system "marketplace" 
+ {:server-type :dev-local
+  :system "marketplace"
   :storage-dir :mem
   :db-name "shum"}
  :web-server
  {:port 3000}
  :jwt-secret "your-super-secret-key-for-dev"
- :email {:host "#profile {:default \"smtp.gmail.com\" :env \"EMAIL_HOST\"}"
-         :port "#profile {:default 587 :env-type \"int\" :env \"EMAIL_PORT\"}"
-         :user "#profile {:env \"EMAIL_USER\"}"
-         :pass "#profile {:env \"EMAIL_PASS\"}"
-         :from "#profile {:default \"no-reply@marketplace.com\" :env \"EMAIL_FROM\"}"}
- :app {:base-url "#profile {:default \"http://localhost:8080\" :env \"BASE_URL\"}"}}
+ :email {:host   #or [#env EMAIL_HOST "smtp.gmail.com"]
+         :port   #long #or [#env EMAIL_PORT 587]
+         :user   #env EMAIL_USER
+         :pass   #env EMAIL_PASS
+         :from   #or [#env EMAIL_FROM "no-reply@marketplace.com"]
+         :tls true}
+ :app {:base-url #or [#env BASE_URL "http://localhost:3000"]}}

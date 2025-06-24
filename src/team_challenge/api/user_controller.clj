@@ -44,15 +44,21 @@
 (s/def ::token string?)
 
 (defn register-user-handler
-  "Handles user registration. Returns JWT token on success."
+  "Handles user registration. Returns message on success."
   [request]
   (let [user-data (:body request)]
     (if (s/valid? ::register-params user-data)
-      (let [_ (user-service/register-user user-data)
-            tokens (user-service/login (:email user-data) (:password user-data))]
+      (try
+        (user-service/register-user user-data)
         {:status 201
-         :body {:message "User registered. Please check your email for a confirmation link."
-                :token tokens}})
+         :body {:message "User registered. Please check your email for a confirmation link."}}
+        (catch clojure.lang.ExceptionInfo e
+          (if (= (:type (ex-data e)) :email-conflict)
+            {:status 409
+             :body {:error "conflict"
+                    :message "A user with this email already exists."}}
+            ;; Re-throw other exceptions
+            (throw e))))
       (let [problems (s/explain-data ::register-params user-data)]
         {:status 400
          :body {:error "validation"
@@ -115,3 +121,14 @@
   [request]
   (let [identity (:identity request)]
     {:status 200 :body {:user identity}}))
+
+
+(comment 
+  (def user-data {:first_name "Alexandr",
+                  :last_name "Sukhryn",
+                  :email "alexandrvirtual@gmail.com",
+                  :password "password1986"})
+  (s/valid? ::register-params user-data)
+
+  (register-user-handler {:body user-data})
+  )

@@ -1,37 +1,47 @@
-{:paths ["src" "resources" "config"]
+{:paths ["src" "resources"]
 
- :deps
- {org.clojure/clojure {:mvn/version "1.12.1"}
-  com.datomic/local {:mvn/version "1.0.291"}
-  mount/mount {:mvn/version "0.1.18"}
-  org.clojure/tools.namespace {:mvn/version "1.4.4"}
-  http-kit/http-kit {:mvn/version "2.8.0"}
-  metosin/reitit {:mvn/version "0.7.1"}
-  metosin/reitit-swagger-ui {:mvn/version "0.7.1"}
-  metosin/reitit-spec {:mvn/version "0.7.1"}
-  ring/ring-core {:mvn/version "1.12.2"}
-  ring/ring-json {:mvn/version "0.5.1"}
-  ring-cors/ring-cors {:mvn/version "0.1.13"}
-  buddy/buddy-hashers {:mvn/version "2.0.167"}
-  buddy/buddy-sign {:mvn/version "3.6.1-359"}
-  clj-time/clj-time {:mvn/version "0.15.2"}
-  com.draines/postal {:mvn/version "2.0.5"}
-  aero/aero {:mvn/version "1.1.6"}
-  cheshire/cheshire {:mvn/version "5.13.0"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.1"}
+        ;; Datomic
+        com.datomic/local    {:mvn/version "1.0.291"}
+
+        ;; Auth
+        buddy/buddy-hashers {:mvn/version "2.0.167"}
+        buddy/buddy-sign {:mvn/version "3.6.1-359"}
+
+        ;; Web
+        metosin/reitit {:mvn/version "0.7.1"}
+        ring/ring-core {:mvn/version "1.12.2"}
+        ring/ring-jetty-adapter {:mvn/version "1.12.2"}
+        ring/ring-json {:mvn/version "0.5.1"}
+        ring-cors/ring-cors {:mvn/version "0.1.13"}
+        http-kit/http-kit {:mvn/version "2.8.0"}
+
+        ;; System
+        mount/mount {:mvn/version "0.1.18"}
+
+        ;; Config
+        aero/aero {:mvn/version "1.1.6"}
+
+        ;; Email
+        com.draines/postal {:mvn/version "2.0.5"}
+
+        ;; Time utils
+        clj-time/clj-time {:mvn/version "0.15.2"}}
 
  :aliases
- {:dev {:extra-deps {nrepl/nrepl {:mvn/version "1.1.0"}
-                     cider/cider-nrepl {:mvn/version "0.45.0"}}
-        :main-opts ["-m" "nrepl.cmdline"
-                    "--middleware" "[cider.nrepl/cider-middleware]"
-                    "--port" "7888"]}
+ {:dev {:extra-paths ["config"]
+        :extra-deps {org.clojure/tools.namespace {:mvn/version "1.5.0"}
+                     nrepl/nrepl {:mvn/version "1.1.2"}
+                     cider/cider-nrepl {:mvn/version "0.49.1"}}
+        :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--port" "7888"]}
 
   :test {:extra-paths ["test"]
-         :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
-                      cognitect-labs/test-runner
-                      {:git/url "https://github.com/cognitect-labs/test-runner"
-                       :sha "e0d012b4c0406236b0c4f25f391e889f4cdd6589"}}
+         :extra-deps {io.pedestal/pedestal.test {:mvn/version "0.6.3"}}
          :main-opts ["-m" "cognitect.test-runner"]}
 
-  :run {:main-opts ["-m" "team-challenge.marketplace-shum"]}}
-}
+  :run {:main-opts ["-m" "team-challenge.marketplace-shum"]}
+
+  :uberjar {:replace-deps {}
+            :exec-fn build/uber
+            :exec-args {:main 'team-challenge.marketplace-shum
+                        :uber-file "target/app.jar"}}}}
