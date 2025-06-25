@@ -10,10 +10,22 @@ jobs:
   build:
     environment: test
     runs-on: ubuntu-latest
+
+    services:
+      activemq:
+        image: vromero/activemq-artemis
+        ports:
+          - 61616:61616
+        options: >-
+          --health-cmd "curl -f http://localhost:8161 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
-      APP_ENV: ${{ vars.APP_ENV }} 
+      APP_ENV: ${{ vars.APP_ENV }}
       PORT: ${{ vars.PORT }}
-      HOST: ${{ vars.PORT }}
+      HOST: ${{ vars.HOST }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
       EMAIL_HOST: ${{ vars.EMAIL_HOST }}
       EMAIL_USER: ${{ vars.EMAIL_USER }}
@@ -37,29 +49,20 @@ jobs:
     - name: Install clojure tools
       uses: DeLaGuardo/setup-clojure@13.4
       with:
-          # Install just one or all simultaneously
-          # The value must indicate a particular version of the tool, or use 'latest'
-          # to always provision the latest version
-          cli: 1.12.1.1550               # Clojure CLI based on tools.deps
-          # lein: 2.9.1                  # Leiningen
-          # boot: 2.8.3                  # Boot.clj
-          # bb: 0.7.8                    # Babashka
-          clj-kondo: 2022.05.31        # Clj-kondo
-          cljfmt: 0.10.2               # cljfmt
-          # cljstyle: 0.16.626           # cljstyle
-          # zprint: 1.2.3                # zprint
+        cli: 1.12.1.1550
+        clj-kondo: 2022.05.31
+        cljfmt: 0.10.2
 
     - name: Cache clojure dependencies
       uses: actions/cache@v3
       with:
-          path: |
-            ~/.m2/repository
-            ~/.gitlibs
-            ~/.deps.clj
-            .cpcache
-          # List all files containing dependencies:
-          key: cljdeps-${{ hashFiles('deps.edn') }}
-          restore-keys: cljdeps-
+        path: |
+          ~/.m2/repository
+          ~/.gitlibs
+          ~/.deps.clj
+          .cpcache
+        key: cljdeps-${{ hashFiles('deps.edn') }}
+        restore-keys: cljdeps-
 
     - name: Run clj-kondo lint
       run: clj-kondo --lint src test
@@ -69,7 +72,7 @@ jobs:
 
     - name: Print APP_ENV
       run: echo $APP_ENV
-    
+
     - name: List config files
       run: ls -l config
 
