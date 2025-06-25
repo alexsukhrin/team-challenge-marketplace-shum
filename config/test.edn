@@ -10,16 +10,14 @@
             "&ssl=true&sslmode=require"]}
 
  :web-server 
- {:port #long #env PORT
-  :host #env HOST}
+ {:port #long #or [#env PORT 4000]
+  :host #or [#env HOST "localhost"]}
 
- :jwt-secret #env JWT_SECRET
+ :jwt-secret #or [#env JWT_SECRET "test"]
 
- :email {:host   #env EMAIL_HOST
-         :port   #long #env EMAIL_PORT
-         :user   #env EMAIL_USER
-         :pass   #env EMAIL_PASS
-         :from   #env EMAIL_FROM
-         :tls    true}
-
- :app {:base-url #env BASE_URL}}
+ :email {:host   #or [#env EMAIL_HOST "localhost"]
+         :port   #long #or [#env EMAIL_PORT 1025]
+         :user   #or [#env EMAIL_USER "test"]
+         :pass   #or [#env EMAIL_PASS "test"]
+         :from   #or [#env EMAIL_FROM "test@example.com"]
+         :tls    true}}
