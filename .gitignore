@@ -32,3 +32,5 @@ env
 
 /.cpcache
 /.nrepl-port
+datomic-pro/*.zip
+datomic-pro/*.zip
