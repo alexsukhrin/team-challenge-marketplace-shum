@@ -1,5 +1,5 @@
 (ns team-challenge.repository.user-repository
-  (:require [datomic.client.api :as d]
+  (:require [datomic.api :as d]
             [team-challenge.db :as db]
             [team-challenge.service.auth-service :as auth-service]))
 
@@ -8,8 +8,7 @@
         user-tempid (- (rand-int 1000000000)) ; унікальний tempid для кожної транзакції
         profile-id (java.util.UUID/randomUUID)
         hashed-password (auth-service/hash-password password)]
-    (d/transact db/conn
-                {:tx-data [{:db/id user-tempid
+    (d/transact db/conn [{:db/id user-tempid
                             :user/id user-id
                             :user/email email
                             :user/email-confirmed? false
@@ -18,7 +17,7 @@
                            {:user-profile/id profile-id
                             :user-profile/user user-tempid
                             :user-profile/first-name first_name
-                            :user-profile/last-name last_name}]})
+                            :user-profile/last-name last_name}])
     {:user/id user-id
      :user/email email
      :user-profile/id profile-id
@@ -41,16 +40,14 @@
               eid))))
 
 (defn set-password-reset-token! [user-id token expires-at]
-  @(d/transact db/conn
-               {:tx-data [{:db/id [:user/id user-id]
+  (d/transact db/conn [{:db/id [:user/id user-id]
                            :auth/password-reset-token token
-                           :auth/password-reset-token-expires-at expires-at}]}))
+                           :auth/password-reset-token-expires-at expires-at}]))
 
 (defn set-confirmation-token! [user-id token expires-at]
-  (d/transact db/conn
-              {:tx-data [{:db/id [:user/id user-id]
+  (d/transact db/conn [{:db/id [:user/id user-id]
                           :user/email-confirmation-token token
-                          :user/email-confirmation-token-expires-at expires-at}]}))
+                          :user/email-confirmation-token-expires-at expires-at}]))
 
 (defn find-user-by-reset-token [token]
   (let [db (d/db db/conn)]
@@ -71,11 +68,11 @@
       (d/pull db '[*] user-eid))))
 
 (defn update-password! [user-id new-password-hash]
-  @(d/transact db/conn
-               {:tx-data [{:db/id [:user/id user-id]
+  (d/transact db/conn
+              [{:db/id [:user/id user-id]
                            :auth/password-hash new-password-hash
                            :auth/password-reset-token nil
-                           :auth/password-reset-token-expires-at nil}]}))
+                           :auth/password-reset-token-expires-at nil}]))
 
 (defn confirm-user-email! [user-id]
   (let [db (d/db db/conn)
@@ -84,16 +81,16 @@
         token (:user/email-confirmation-token user)
         expires-at (:user/email-confirmation-token-expires-at user)]
     (d/transact db/conn
-                {:tx-data (cond-> [{:db/id [:user/id user-id]
+                (cond-> [{:db/id [:user/id user-id]
                                     :user/email-confirmed? true}]
                             token (conj [:db/retract [:user/id user-id] :user/email-confirmation-token token])
-                            expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at]))})))
+                            expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at])))))
 
 (comment
 
   (create-user! {:first_name "alexandr"
                  :last_name "sukhryn"
-                 :email "alexandrvirtual@gmail.com"
+                 :email "alexandrvirtual1@gmail.com"
                  :password "password1986"})
 
   (d/q '[:find ?a
@@ -121,7 +118,7 @@
   (def email "alexandrvirtual@gmail.com")
   (def hashed-password (auth-service/hash-password "password"))
 
-  (d/transact db/conn {:tx-data [{:db/id user-tempid
+  (d/transact db/conn [{:db/id user-tempid
                                   :user/id user-id
                                   :user/email email
                                   :user/email-confirmed? false
@@ -130,7 +127,7 @@
                                  {:user-profile/id profile-id
                                   :user-profile/user user-tempid
                                   :user-profile/first-name first_name
-                                  :user-profile/last-name last_name}]})
+                                  :user-profile/last-name last_name}])
 
   (d/q '[:find ?e ?user-id ?confirmed
          :in $ ?email
@@ -163,4 +160,5 @@
          [?e :user/email-confirmation-token ?token]]
        db token)
 
-  (find-user-by-email email))
+  (find-user-by-email email)
+  )

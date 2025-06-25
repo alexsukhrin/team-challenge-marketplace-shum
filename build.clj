@@ -23,7 +23,7 @@
          :uber-file (format "target/%s-%s.jar" lib version)
          :basis (b/create-basis {})
          :class-dir class-dir
-         :src-dirs ["src"]
+         :src-dirs ["src" "resources" "config"]
          :ns-compile [main]))
 
 (defn ci "Run the CI pipeline of tests (and build the uberjar)." [opts]
@@ -31,7 +31,22 @@
   (b/delete {:path "target"})
   (let [opts (uber-opts opts)]
     (println "\nCopying source...")
-    (b/copy-dir {:src-dirs ["resources" "src"] :target-dir class-dir})
+    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
+    (println (str "\nCompiling " main "..."))
+    (b/compile-clj opts)
+    (println "\nBuilding JAR...")
+    (b/uber opts))
+  opts)
+
+(defn uber
+  "Build an uberjar."
+  [{:keys [main uber-file] :as opts}]
+  (b/delete {:path "target"})
+  (let [opts (merge (uber-opts opts)
+                    {:main main
+                     :uber-file uber-file})]
+    (println "\nCopying source...")
+    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
     (println (str "\nCompiling " main "..."))
     (b/compile-clj opts)
     (println "\nBuilding JAR...")

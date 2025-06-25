@@ -1,35 +1,49 @@
 (ns team-challenge.db
   (:require [mount.core :refer [defstate]]
             [team-challenge.config :as config]
-            [datomic.client.api :as d]
-            [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+            [datomic.api :as d]
+            [clojure.string :as str]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]))
 
-(defn- load-schemas []
-  (let [schema-dir (io/file (io/resource "schema"))]
-    (->> (file-seq schema-dir)
-         (filter #(.isFile %))
-         (mapcat (comp edn/read-string slurp)))))
-
-(defstate client
-  :start (d/client (:datomic config/*config*))
-  :stop nil)
+(defn- get-conn []
+  (let [uri (get-in config/*config* [:datomic :db-uri])
+               conn (d/connect uri)
+               schema-dir "resources/schema"
+               schema-files (->> (io/file schema-dir)
+                                 file-seq
+                                 (filter #(.isFile %))
+                                 (filter #(str/ends-with? (.getName %) ".edn"))
+                                 (map #(.getPath %)))]
+           (doseq [file schema-files]
+             (let [schema (edn/read-string (slurp file))]
+               (d/transact conn schema)))
+           conn))
 
 (defstate conn
-  :start (let [db-name (get-in config/*config* [:datomic :db-name])]
-           (d/create-database client {:db-name db-name})
-           (let [connection (d/connect client {:db-name db-name})
-                 schemas (load-schemas)]
-             (d/transact connection {:tx-data schemas})
-             connection)))
+  :start (get-conn)
+  :stop (.release conn))
 
 (comment
-  ;; To test manually in the REPL:
-  ;; 1. (mount/start #'config/*config*)
-  ;; 2. Evaluate the forms below one by one
-  (def c (d/client (:datomic config/*config*)))
-  (def db-name (get-in config/*config* [:datomic :db-name]))
-  (d/create-database c {:db-name db-name})
-  (def connection (d/connect c {:db-name db-name}))
-  (def schemas (load-schemas))
-  (d/transact connection {:tx-data schemas}))
+  (def uri (get-in config/*config* [:datomic :db-uri]))
+
+  (d/create-database uri)
+
+  (def uri (get-in config/*config* [:datomic :db-uri]))
+
+
+  (def conn (d/connect uri))
+
+  (def schema-dir "resources/schema")
+
+  (def schema-files (->> (io/file schema-dir)
+                                 file-seq
+                                 (filter #(.isFile %))
+                                 (filter #(str/ends-with? (.getName %) ".edn"))
+                                 (map #(.getPath %))))
+  
+  (doseq [file schema-files]
+             (let [schema (edn/read-string (slurp file))]
+               (d/transact conn schema)))
+
+  )

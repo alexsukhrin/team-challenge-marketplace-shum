@@ -1,8 +1,11 @@
-{:paths ["src" "resources"]
+{:paths ["src" "resources" "."]
 
  :deps {org.clojure/clojure {:mvn/version "1.12.1"}
         ;; Datomic
-        com.datomic/local    {:mvn/version "1.0.291"}
+        com.datomic/peer {:mvn/version "1.0.7277"}
+
+        ;; Postgresql
+        org.postgresql/postgresql {:mvn/version "42.7.3"}
 
         ;; Auth
         buddy/buddy-hashers {:mvn/version "2.0.167"}
@@ -46,10 +49,11 @@
 
   :run {:main-opts ["-m" "team-challenge.marketplace-shum"]}
 
-  :uberjar {:replace-deps {}
+  :uberjar {:replace-deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
             :exec-fn build/uber
-            :exec-args {:main 'team-challenge.marketplace-shum
-                        :uber-file "target/app.jar"}}
+            :exec-args {:main team-challenge.marketplace-shum
+                        :uber-file "target/app.jar"}
+            :ns-default build}
 
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
           :ns-default build}}}
