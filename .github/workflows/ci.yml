@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    environment: test
     runs-on: ubuntu-latest
     env:
       APP_ENV: ${{ vars.APP_ENV }} 

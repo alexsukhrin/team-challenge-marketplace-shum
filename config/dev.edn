@@ -1,6 +1,6 @@
 {:http-port 8080
  :datomic
- {:db-uri "datomic:dev://localhost:8998/shum"}
+ {:db-uri "datomic:mem://shum-dev"}
  :web-server 
  {:port #long #env PORT
   :host #env HOST}
