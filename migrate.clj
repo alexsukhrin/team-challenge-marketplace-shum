@@ -3,12 +3,12 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [mount.core :as mount]
-            [team-challenge.config :as config]))
+            [aero.core :as aero]))
 
 (defn ^:exec main [& _]
-  (mount/start #'config/*config*)
-  (let [uri (get-in config/*config* [:datomic :db-uri])
+  (let [env (or (System/getenv "APP_ENV") "dev")
+        config (aero/read-config (str "config/" env ".edn"))
+        uri (get-in config [:datomic :db-uri])
         _ (try (d/create-database uri) (catch Exception _ nil))
         conn (d/connect uri)
         schema-dir "resources/schema"
