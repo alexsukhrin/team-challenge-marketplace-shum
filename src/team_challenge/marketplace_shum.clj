@@ -8,9 +8,6 @@
 (defn start-config []
   (mount/start #'config/*config*))
 
-(defn start-db-client []
-  (mount/start #'team-challenge.db/client))
-
 (defn start-db-conn []
   (mount/start #'db/conn))
 
@@ -19,15 +16,11 @@
 
 (defn start-system []
   (start-config)
-  (start-db-client)
   (start-db-conn)
   (start-server))
 
 (defn stop-config []
   (mount/stop #'config/*config*))
-
-(defn stop-db-client []
-  (mount/stop #'team-challenge.db/client))
 
 (defn stop-db-conn []
   (mount/stop #'db/conn))
@@ -38,7 +31,6 @@
 (defn stop-system []
   (stop-server)
   (stop-db-conn)
-  (stop-db-client)
   (stop-config))
 
 (defn -main

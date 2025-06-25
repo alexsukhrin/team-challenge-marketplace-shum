@@ -1,5 +1,5 @@
 (ns team-challenge.repository.auth-repository
-  (:require [datomic.client.api :as d]
+  (:require [datomic.api :as d]
             [team-challenge.db :as db]))
 
 (defn is-token-blacklisted?
@@ -17,7 +17,7 @@
 (defn add-token-to-blacklist!
   "Adds the given JTI to the blacklist."
   [jti]
-  @(d/transact db/conn {:tx-data [{:auth/blacklisted-token (str jti)}]}))
+  (d/transact db/conn [{:auth/blacklisted-token (str jti)}]))
 
 (defn add-refresh-token-to-revoked-list!
   "Removes the given JTI from the valid refresh token list (revokes it)."
@@ -25,4 +25,4 @@
   (let [dbval (d/db db/conn)
         eid (ffirst (d/q '[:find ?e :in $ ?jti :where [?e :auth/refresh-token ?jti]] dbval (str jti)))]
     (when eid
-      @(d/transact db/conn {:tx-data [[:db.fn/retractEntity eid]]}))))
+      (d/transact db/conn [[:db.fn/retractEntity eid]]))))

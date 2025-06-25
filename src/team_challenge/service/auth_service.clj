@@ -3,7 +3,7 @@
             [buddy.sign.jwt :as jwt]
             [team-challenge.config :as config]
             [team-challenge.db :as db]
-            [datomic.client.api :as d]
+            [datomic.api :as d]
             [clj-time.core :as t]
             [team-challenge.repository.auth-repository :as auth-repo]))
 
@@ -45,7 +45,7 @@
                              :user-id (:user/id user)
                              :jti jti
                              :exp (t/plus (t/now) refresh-token-lifetime)})]
-    (d/transact db/conn {:tx-data [{:auth/refresh-token (str jti)}]})
+    (d/transact db/conn [{:auth/refresh-token (str jti)}])
     token))
 
 ;;; Token Verification

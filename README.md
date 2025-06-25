@@ -108,3 +108,15 @@ _Feel free to remove or change the `LICENSE` file and remove or update this_
 _section of the `README.md` file!_
 
 Distributed under the Eclipse Public License version 1.0.
+
+## Datomic console
+
+bin/console -p 8084 aws-postgres "datomic:sql://shum?jdbc:postgresql://postgres-instance.cby2c0iga8z1.eu-central-1.rds.amazonaws.com:5432/marketplace?user=marketplace_user&password=marketplace_password&ssl=true&sslmode=require"
+
+## Datomic peer-server 
+
+bin/run -m datomic.peer-server \
+  -h 0.0.0.0 \
+  -p 9004 \
+  -a shum_access,shum_secret \
+  -d shum,"datomic:sql://shum?jdbc:postgresql://postgres-instance.cby2c0iga8z1.eu-central-1.rds.amazonaws.com:5432/marketplace?user=marketplace_user&password=marketplace_password&ssl=true&sslmode=require"
