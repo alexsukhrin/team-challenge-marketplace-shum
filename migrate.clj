@@ -6,7 +6,7 @@
             [mount.core :as mount]
             [team-challenge.config :as config]))
 
-(defn -main [& _]
+(defn ^:exec main [& _]
   (mount/start #'config/*config*)
   (let [uri (get-in config/*config* [:datomic :db-uri])
         _ (try (d/create-database uri) (catch Exception _ nil))
