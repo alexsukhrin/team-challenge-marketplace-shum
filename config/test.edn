@@ -1,13 +1,5 @@
 {:http-port 8080
- :datomic
- {:db-uri #join
-           ["datomic:sql://shum-test?jdbc:postgresql://"
-            #env DB_HOST
-            ":5432/marketplace?user="
-            #env DB_USER
-            "&password="
-            #env DB_PASS
-            "&ssl=true&sslmode=require"]}
+ :datomic {:db-uri "datomic:mem://shum-test"}
 
  :web-server 
  {:port #long #or [#env PORT 4000]
