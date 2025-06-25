@@ -11,14 +11,14 @@
    (or (System/getenv varname)
        default)))
 
-(declare ^:dynamic *config*)
+(defn load-config [path]
+  (read-config path))
 
-(defn load-config []
-  (read-config (str "config/" (env! "APP_ENV" "dev") ".edn")))
+(declare ^:dynamic *config*)
 
 (defstate ^:dynamic *config*
   :start
-  (load-config))
+  (load-config (str "config/" (env! "APP_ENV" "dev") ".edn")))
 
 (comment
 

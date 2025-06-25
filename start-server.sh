@@ -10,5 +10,5 @@ else
   echo "⚠️  .env file not found, skipping"
 fi
 
-echo "🟢 Starting REPL in team-challenge.marketplace-shum namespace..."
-clj -M:dev
+echo "🟢 Starting Server in team-challenge.marketplace-shum namespace..."
+clojure -M:run

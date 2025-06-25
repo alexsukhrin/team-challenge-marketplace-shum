@@ -1,30 +1,55 @@
 {:paths ["src" "resources"]
+
  :deps {org.clojure/clojure {:mvn/version "1.12.1"}
+        ;; Datomic
+        com.datomic/local    {:mvn/version "1.0.291"}
+
+        ;; Auth
+        buddy/buddy-hashers {:mvn/version "2.0.167"}
+        buddy/buddy-sign {:mvn/version "3.6.1-359"}
+
+        ;; Web
+        metosin/reitit {:mvn/version "0.7.1"}
+        ring/ring-core {:mvn/version "1.12.2"}
+        ring/ring-jetty-adapter {:mvn/version "1.12.2"}
+        ring/ring-json {:mvn/version "0.5.1"}
+        ring-cors/ring-cors {:mvn/version "0.1.13"}
+        http-kit/http-kit {:mvn/version "2.8.0"}
+
+        ;; System
+        mount/mount {:mvn/version "0.1.18"}
+
+        ;; Config
         aero/aero {:mvn/version "1.1.6"}
-        mount/mount {:mvn/version "0.1.23"}
-        migratus/migratus {:mvn/version "1.6.4"}
-        org.postgresql/postgresql {:mvn/version "42.7.2"}
-        hikari-cp/hikari-cp {:mvn/version "3.0.1"}
-        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}}
+
+        ;; Email
+        com.draines/postal {:mvn/version "2.0.5"}
+
+        ;; Time utils
+        clj-time/clj-time {:mvn/version "0.15.2"}
+        clj-http/clj-http {:mvn/version "3.12.3"}
+
+        ;; Build tools
+        io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
+
  :aliases
- {:migrate 
-  {:deps {migratus/migratus {:mvn/version "1.6.4"} 
-          org.postgresql/postgresql {:mvn/version "42.6.0"}
-          aero/aero {:mvn/version "1.1.6"}}
-   :ns-default migration}
-  :run-m {:main-opts ["-m" "team-challenge.marketplace-shum"]}
-  :run-x {:ns-default team-challenge.marketplace-shum
-          :exec-fn greet
-          :exec-args {:name "Clojure"}}
-  :build {:deps {io.github.clojure/tools.build 
-                 {:mvn/version "0.9.6"}}
-          :ns-default build}
-  :repl {:extra-deps {nrepl/nrepl {:mvn/version "1.1.0"}
-                      cider/cider-nrepl {:mvn/version "0.56.0"}}
-         :main-opts ["-m" "nrepl.cmdline"
-                     "--port" "7888"
-                     "--interactive"]}
+ {:dev {:extra-paths ["config"]
+        :extra-deps {org.clojure/tools.namespace {:mvn/version "1.5.0"}
+                     nrepl/nrepl {:mvn/version "1.1.2"}
+                     cider/cider-nrepl {:mvn/version "0.49.1"}
+                     clj-http/clj-http {:mvn/version "3.12.3"}}
+        :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--port" "7888"]}
+
   :test {:extra-paths ["test"]
-         :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
-                      io.github.cognitect-labs/test-runner
-                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}}}}
+         :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]}
+
+  :run {:main-opts ["-m" "team-challenge.marketplace-shum"]}
+
+  :uberjar {:replace-deps {}
+            :exec-fn build/uber
+            :exec-args {:main 'team-challenge.marketplace-shum
+                        :uber-file "target/app.jar"}}
+
+  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
+          :ns-default build}}}
