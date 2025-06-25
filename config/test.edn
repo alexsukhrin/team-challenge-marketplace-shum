@@ -9,8 +9,9 @@
             #env DB_PASS
             "&ssl=true&sslmode=require"]}
 
- :web-server
- {:port 3000}
+ :web-server 
+ {:port #long #env PORT
+  :host #env HOST}
 
  :jwt-secret #env JWT_SECRET
 

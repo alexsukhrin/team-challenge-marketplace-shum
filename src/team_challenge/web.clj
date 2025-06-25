@@ -7,7 +7,7 @@
 
 (defstate http-server
   :start
-  (let [port (get-in config/*config* [:web-server :port] 3000)
+  (let [port (get-in config/*config* [:web-server :port])
         app (ring/ring-handler (routes/make-routes))]
     (println (str "Starting server on port: " port))
     (http-kit/run-server
