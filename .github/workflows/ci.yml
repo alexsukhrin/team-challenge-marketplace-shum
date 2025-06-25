@@ -26,6 +26,35 @@ jobs:
       DB_USER: ${{ vars.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ${{ vars.POSTGRES_USER }}"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 10
+
+      datomic-transactor:
+        image: alexandrvirtual/datomic-transactor-test:1.0.7364
+        ports:
+          - 8998:8998
+          - 8182:8182
+        env:
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd "nc -z localhost 8998"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -53,6 +82,20 @@ jobs:
             .cpcache
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
+
+      - name: Start Datomic Transactor
+        run: |
+          sudo apt-get update && sudo apt-get install -y rlwrap
+          cd datomic-pro/datomic-pro-1.0.7364
+          nohup bin/transactor ../transactor.properties > ../../transactor.log 2>&1 &
+
+      - name: Wait for Datomic Transactor
+        run: |
+          for i in {1..30}; do
+            nc -z localhost 8998 && break
+            echo "Waiting for Datomic Transactor..."
+            sleep 2
+          done
 
       - name: Run test DB migrations
         run: clojure -X:migrate
