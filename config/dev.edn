@@ -5,9 +5,9 @@
  {:port 3000}
  :jwt-secret "dev-secret"
  :email {:host   #env EMAIL_HOST
-         :port   #env EMAIL_PORT
+         :port   #long #env EMAIL_PORT
          :user   #env EMAIL_USER
          :pass   #env EMAIL_PASS
          :from   #env EMAIL_FROM
-         :tls    false}
+         :tls    true}
  :app {:base-url #env BASE_URL}}
