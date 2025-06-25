@@ -106,8 +106,6 @@
 
   (d/q '[:find (count ?e) . :where [?e :user/email]] (d/db db/conn))
 
-  (d/list-databases db/client {})
-
   (def db (d/db db/conn))
 
   (def user-tempid -1000001)
