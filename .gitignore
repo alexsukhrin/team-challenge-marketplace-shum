@@ -34,3 +34,6 @@ env
 /.nrepl-port
 datomic-pro/*.zip
 datomic-pro/*.zip
+datomic-pro
+target
+*.log
