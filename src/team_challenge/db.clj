@@ -8,6 +8,8 @@
 
 (defn- get-conn []
   (let [uri (get-in config/*config* [:datomic :db-uri])
+        _ (println "[DEBUG] Datomic URI:" uri)
+        _ (println "[DEBUG] ENV:" (System/getenv))
         _ (d/create-database uri)
         conn (d/connect uri)
         schema-dir "resources/schema"
