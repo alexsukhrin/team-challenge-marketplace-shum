@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      APP_ENV: ${{ vars.APP_ENV }} 
       PORT: ${{ vars.PORT }}
       HOST: ${{ vars.PORT }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
@@ -57,9 +58,6 @@ jobs:
             .cpcache
           # List all files containing dependencies:
           key: cljdeps-${{ hashFiles('deps.edn') }}
-          # key: cljdeps-${{ hashFiles('deps.edn', 'bb.edn') }}
-          # key: cljdeps-${{ hashFiles('project.clj') }}
-          # key: cljdeps-${{ hashFiles('build.boot') }}
           restore-keys: cljdeps-
 
     - name: Run clj-kondo lint
@@ -67,6 +65,12 @@ jobs:
 
     - name: Run cljfmt check
       run: cljfmt check
+
+    - name: Print APP_ENV
+      run: echo $APP_ENV
+    
+    - name: List config files
+      run: ls -l config
 
     - name: Run tests
       run: clojure -T:build test
