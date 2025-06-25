@@ -47,9 +47,9 @@ jobs:
           - 8998:8998
           - 8182:8182
         env:
-          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
           POSTGRES_USER: ${{ vars.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATOMIC_LICENSE_KEY: ${{ secrets.DATOMIC_LICENSE_KEY }}
         options: >-
           --health-cmd "nc -z localhost 8998"
           --health-interval 5s
@@ -84,21 +84,20 @@ jobs:
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
 
-      - name: Start Datomic Transactor
+      - name: Start Datomic Transactor container for SQL scripts
         run: |
-          sudo apt-get update && sudo apt-get install -y rlwrap
-          cd datomic-pro/datomic-pro-1.0.7364
-          nohup bin/transactor ../transactor.properties > ../../transactor.log 2>&1 &
+          docker create --name datomic-transactor-init alexandrvirtual/datomic-transactor-test:1.0.7364
+          docker cp datomic-transactor-init:/opt/datomic/datomic-pro-1.0.7364/bin/sql ./datomic-sql
+          docker rm datomic-transactor-init
 
-      - name: Wait for Datomic Transactor
+      - name: Init Datomic Postgres DB
         run: |
-          for i in {1..30}; do
-            nc -z localhost 8998 && break
-            echo "Waiting for Datomic Transactor..."
-            sleep 2
-          done
-          echo "Extra wait to ensure Postgres is ready for Transactor..."
-          sleep 10
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -f datomic-sql/postgres-db.sql
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
+        env:
+          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
       - name: Run test DB migrations
         run: clojure -X:migrate
@@ -118,34 +117,34 @@ jobs:
       - name: Run tests
         run: clojure -T:build test
 
-  prod-migrate:
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Prepare java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-      - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@13.4
-        with:
-          cli: 1.12.1.1550
-      - name: Run prod DB migrations
-        env:
-          APP_ENV: ${{ vars.APP_ENV }}
-          PORT: ${{ vars.PORT }}
-          HOST: ${{ vars.HOST }}
-          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
-          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
-          EMAIL_USER: ${{ vars.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          DB_HOST: ${{ vars.DB_HOST }}
-          DB_USER: ${{ vars.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-        run: clojure -X:migrate
+  # prod-migrate:
+  #   if: github.ref == 'refs/heads/master'
+  #   runs-on: ubuntu-latest
+  #   environment: prod
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Prepare java
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '11'
+  #     - name: Install clojure tools
+  #       uses: DeLaGuardo/setup-clojure@13.4
+  #       with:
+  #         cli: 1.12.1.1550
+  #     - name: Run prod DB migrations
+  #       env:
+  #         APP_ENV: ${{ vars.APP_ENV }}
+  #         PORT: ${{ vars.PORT }}
+  #         HOST: ${{ vars.HOST }}
+  #         EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+  #         EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+  #         EMAIL_USER: ${{ vars.EMAIL_USER }}
+  #         EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+  #         EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+  #         JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  #         DB_HOST: ${{ vars.DB_HOST }}
+  #         DB_USER: ${{ vars.DB_USER }}
+  #         DB_PASS: ${{ secrets.DB_PASS }}
+  #       run: clojure -X:migrate
