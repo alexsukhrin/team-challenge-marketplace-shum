@@ -8,17 +8,17 @@
 
 (defn- get-conn []
   (let [uri (get-in config/*config* [:datomic :db-uri])
-               conn (d/connect uri)
-               schema-dir "resources/schema"
-               schema-files (->> (io/file schema-dir)
-                                 file-seq
-                                 (filter #(.isFile %))
-                                 (filter #(str/ends-with? (.getName %) ".edn"))
-                                 (map #(.getPath %)))]
-           (doseq [file schema-files]
-             (let [schema (edn/read-string (slurp file))]
-               (d/transact conn schema)))
-           conn))
+        conn (d/connect uri)
+        schema-dir "resources/schema"
+        schema-files (->> (io/file schema-dir)
+                          file-seq
+                          (filter #(.isFile %))
+                          (filter #(str/ends-with? (.getName %) ".edn"))
+                          (map #(.getPath %)))]
+    (doseq [file schema-files]
+      (let [schema (edn/read-string (slurp file))]
+        (d/transact conn schema)))
+    conn))
 
 (defstate conn
   :start (get-conn)
@@ -31,19 +31,16 @@
 
   (def uri (get-in config/*config* [:datomic :db-uri]))
 
-
   (def conn (d/connect uri))
 
   (def schema-dir "resources/schema")
 
   (def schema-files (->> (io/file schema-dir)
-                                 file-seq
-                                 (filter #(.isFile %))
-                                 (filter #(str/ends-with? (.getName %) ".edn"))
-                                 (map #(.getPath %))))
-  
-  (doseq [file schema-files]
-             (let [schema (edn/read-string (slurp file))]
-               (d/transact conn schema)))
+                         file-seq
+                         (filter #(.isFile %))
+                         (filter #(str/ends-with? (.getName %) ".edn"))
+                         (map #(.getPath %))))
 
-  )
+  (doseq [file schema-files]
+    (let [schema (edn/read-string (slurp file))]
+      (d/transact conn schema))))

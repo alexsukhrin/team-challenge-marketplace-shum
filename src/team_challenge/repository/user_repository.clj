@@ -9,15 +9,15 @@
         profile-id (java.util.UUID/randomUUID)
         hashed-password (auth-service/hash-password password)]
     (d/transact db/conn [{:db/id user-tempid
-                            :user/id user-id
-                            :user/email email
-                            :user/email-confirmed? false
-                            :auth/password-hash hashed-password
-                            :user/created-at (java.util.Date.)}
-                           {:user-profile/id profile-id
-                            :user-profile/user user-tempid
-                            :user-profile/first-name first_name
-                            :user-profile/last-name last_name}])
+                          :user/id user-id
+                          :user/email email
+                          :user/email-confirmed? false
+                          :auth/password-hash hashed-password
+                          :user/created-at (java.util.Date.)}
+                         {:user-profile/id profile-id
+                          :user-profile/user user-tempid
+                          :user-profile/first-name first_name
+                          :user-profile/last-name last_name}])
     {:user/id user-id
      :user/email email
      :user-profile/id profile-id
@@ -41,13 +41,13 @@
 
 (defn set-password-reset-token! [user-id token expires-at]
   (d/transact db/conn [{:db/id [:user/id user-id]
-                           :auth/password-reset-token token
-                           :auth/password-reset-token-expires-at expires-at}]))
+                        :auth/password-reset-token token
+                        :auth/password-reset-token-expires-at expires-at}]))
 
 (defn set-confirmation-token! [user-id token expires-at]
   (d/transact db/conn [{:db/id [:user/id user-id]
-                          :user/email-confirmation-token token
-                          :user/email-confirmation-token-expires-at expires-at}]))
+                        :user/email-confirmation-token token
+                        :user/email-confirmation-token-expires-at expires-at}]))
 
 (defn find-user-by-reset-token [token]
   (let [db (d/db db/conn)]
@@ -70,9 +70,9 @@
 (defn update-password! [user-id new-password-hash]
   (d/transact db/conn
               [{:db/id [:user/id user-id]
-                           :auth/password-hash new-password-hash
-                           :auth/password-reset-token nil
-                           :auth/password-reset-token-expires-at nil}]))
+                :auth/password-hash new-password-hash
+                :auth/password-reset-token nil
+                :auth/password-reset-token-expires-at nil}]))
 
 (defn confirm-user-email! [user-id]
   (let [db (d/db db/conn)
@@ -82,9 +82,9 @@
         expires-at (:user/email-confirmation-token-expires-at user)]
     (d/transact db/conn
                 (cond-> [{:db/id [:user/id user-id]
-                                    :user/email-confirmed? true}]
-                            token (conj [:db/retract [:user/id user-id] :user/email-confirmation-token token])
-                            expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at])))))
+                          :user/email-confirmed? true}]
+                  token (conj [:db/retract [:user/id user-id] :user/email-confirmation-token token])
+                  expires-at (conj [:db/retract [:user/id user-id] :user/email-confirmation-token-expires-at expires-at])))))
 
 (comment
 
@@ -117,15 +117,15 @@
   (def hashed-password (auth-service/hash-password "password"))
 
   (d/transact db/conn [{:db/id user-tempid
-                                  :user/id user-id
-                                  :user/email email
-                                  :user/email-confirmed? false
-                                  :auth/password-hash hashed-password
-                                  :user/created-at (java.util.Date.)}
-                                 {:user-profile/id profile-id
-                                  :user-profile/user user-tempid
-                                  :user-profile/first-name first_name
-                                  :user-profile/last-name last_name}])
+                        :user/id user-id
+                        :user/email email
+                        :user/email-confirmed? false
+                        :auth/password-hash hashed-password
+                        :user/created-at (java.util.Date.)}
+                       {:user-profile/id profile-id
+                        :user-profile/user user-tempid
+                        :user-profile/first-name first_name
+                        :user-profile/last-name last_name}])
 
   (d/q '[:find ?e ?user-id ?confirmed
          :in $ ?email
@@ -158,5 +158,4 @@
          [?e :user/email-confirmation-token ?token]]
        db token)
 
-  (find-user-by-email email)
-  )
+  (find-user-by-email email))
