@@ -96,6 +96,8 @@ jobs:
             echo "Waiting for Datomic Transactor..."
             sleep 2
           done
+          echo "Extra wait to ensure Postgres is ready for Transactor..."
+          sleep 10
 
       - name: Run test DB migrations
         run: clojure -X:migrate
