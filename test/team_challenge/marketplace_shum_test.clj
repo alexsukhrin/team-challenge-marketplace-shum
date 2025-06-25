@@ -16,7 +16,6 @@
 (use-fixtures :once
   (fn [f]
     (mount/start #'config/*config*
-                 #'db/client
                  #'db/conn
                  #'web/http-server)
     (try
