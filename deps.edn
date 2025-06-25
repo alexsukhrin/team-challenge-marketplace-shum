@@ -2,9 +2,7 @@
 
  :deps {org.clojure/clojure {:mvn/version "1.12.1"}
         ;; Datomic
-        com.datomic/peer {:mvn/version "1.0.7277"
-                          :exclusions [org.apache.activemq/artemis-core-client
-                                       org.apache.activemq/artemis-commons]}
+        com.datomic/peer {:mvn/version "1.0.7277"}
 
         ;; Postgresql
         org.postgresql/postgresql {:mvn/version "42.7.3"}
