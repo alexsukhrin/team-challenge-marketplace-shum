@@ -2,11 +2,13 @@
  :datomic {:db-uri #join
            ["datomic:sql://shum-test?jdbc:postgresql://"
             #or [#env DB_HOST "postgres"]
-            ":5432/marketplace?user="
+            ":5432/"
+            #or [#env POSTGRES_DB "marketplace"]
+            "?user="
             #or [#env DB_USER "marketplace_user"]
             "&password="
             #or [#env DB_PASS "marketplace_password"]
-            "&ssl=false"]}
+            "&ssl=true&sslmode=require"]}
 
  :web-server 
  {:port #long #or [#env PORT 4000]
