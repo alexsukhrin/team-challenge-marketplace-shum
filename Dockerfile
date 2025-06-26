@@ -11,7 +11,7 @@ COPY config ./config
 RUN clj -P
 
 # Збираємо uberjar
-RUN clojure -T:build uber
+RUN clojure -T:uberjar
 
 # ---
 # Runtime image
