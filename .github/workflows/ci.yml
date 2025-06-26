@@ -164,16 +164,17 @@ jobs:
             echo "--- Pulling new image: $IMAGE_NAME ---"
             docker pull $IMAGE_NAME
 
-            echo "--- Running migrations ---"
-            docker run --env-file=.env --rm \
-              $IMAGE_NAME migrate
-            
-            echo "--- Deploying new application container ---"
+            echo "--- Stopping and removing app container before migrations (if running) ---"
             if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
                 docker stop $CONTAINER_NAME
                 docker rm -f $CONTAINER_NAME || true
             fi
 
+            echo "--- Running migrations ---"
+            docker run --env-file=.env --rm \
+              $IMAGE_NAME migrate
+
+            echo "--- Deploying new application container ---"
             docker run --env-file=.env -d \
               --name $CONTAINER_NAME \
               --restart always \

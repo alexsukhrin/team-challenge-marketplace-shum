@@ -25,4 +25,4 @@ fi' > /usr/local/bin/entrypoint.sh && \
 ENTRYPOINT ["entrypoint.sh"]
 
 # За замовчуванням буде запускатися додаток
-CMD ["app"] 
+CMD ["app"]
