@@ -201,12 +201,6 @@ jobs:
                 docker rm -f $CONTAINER_NAME || true
             fi
 
-            IMAGE_NAME_MIGRATE="ghcr.io/${{ github.repository }}:migrate-${{ github.sha }}"
-            echo "--- Pulling new migrate image: $IMAGE_NAME_MIGRATE ---"
-            docker pull $IMAGE_NAME_MIGRATE
-            docker run --env-file=.env --rm \
-              $IMAGE_NAME_MIGRATE
-
   migrate-prod:
     name: Run DB migrations on prod
     runs-on: ubuntu-latest
@@ -247,9 +241,3 @@ jobs:
                 docker stop $CONTAINER_NAME
                 docker rm -f $CONTAINER_NAME || true
             fi
-
-            IMAGE_NAME_MIGRATE="ghcr.io/${{ github.repository }}:migrate-${{ github.sha }}"
-            echo "--- Pulling new migrate image: $IMAGE_NAME_MIGRATE ---"
-            docker pull $IMAGE_NAME_MIGRATE
-            docker run --env-file=.env --rm \
-              $IMAGE_NAME_MIGRATE
