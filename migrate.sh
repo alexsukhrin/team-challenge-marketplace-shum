@@ -9,5 +9,4 @@ else
   echo "⚠️  .env file not found, skipping"
 fi
 
-export APP_ENV=prod
 clojure -X:migrate
