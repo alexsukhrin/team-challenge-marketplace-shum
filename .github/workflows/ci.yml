@@ -201,6 +201,13 @@ jobs:
                 docker rm -f $CONTAINER_NAME || true
             fi
 
+            echo "--- Deploying new application container ---"
+            docker run --env-file=.env -d \
+              --name $CONTAINER_NAME \
+              --restart always \
+              -p 4000:4000 \
+              $IMAGE_NAME
+
   migrate-prod:
     name: Run DB migrations on prod
     runs-on: ubuntu-latest
@@ -230,7 +237,7 @@ jobs:
           script: |
             echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            IMAGE_NAME="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+            IMAGE_NAME="ghcr.io/${{ github.repository }}:migrate-${{ github.sha }}"
             CONTAINER_NAME="marketplace-shum-app"
 
             echo "--- Pulling new image: $IMAGE_NAME ---"
@@ -241,3 +248,7 @@ jobs:
                 docker stop $CONTAINER_NAME
                 docker rm -f $CONTAINER_NAME || true
             fi
+
+            echo "--- Running migrations ---"
+            docker run --env-file=.env --rm \
+              $IMAGE_NAME
