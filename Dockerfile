@@ -3,10 +3,12 @@ WORKDIR /app
 
 # Копіюємо залежності для кешування
 COPY deps.edn ./
-RUN clj -P
+COPY build.clj ./
+COPY src ./src
+COPY resources ./resources
+COPY config ./config
 
-# Копіюємо код і ресурси
-COPY . .
+RUN clj -P
 
 # Збираємо uberjar
 RUN clojure -T:build uber
