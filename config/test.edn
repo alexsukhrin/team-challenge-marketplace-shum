@@ -8,7 +8,7 @@
             #or [#env DB_USER "marketplace_user"]
             "&password="
             #or [#env DB_PASS "marketplace_password"]
-            "&ssl=true&sslmode=require"]}
+            "&ssl=false"]}
 
  :web-server 
  {:port #long #or [#env PORT 4000]
