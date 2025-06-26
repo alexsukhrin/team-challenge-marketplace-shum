@@ -24,4 +24,4 @@ COPY --from=build /app/resources ./resources
 
 ENV JAVA_OPTS="-Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "clojure -M -m migrate && java $JAVA_OPTS -jar app.jar"]
