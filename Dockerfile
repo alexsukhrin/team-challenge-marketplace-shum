@@ -14,8 +14,7 @@ RUN clj -P
 RUN clojure -T:uberjar
 
 # ---
-# Runtime image
-FROM eclipse-temurin:17-jre
+FROM clojure:openjdk-17-tools-deps
 WORKDIR /app
 
 COPY --from=build /app/target/app.jar ./app.jar
