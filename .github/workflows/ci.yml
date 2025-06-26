@@ -36,6 +36,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
+          --network ci-network
           --health-cmd "pg_isready -U ${{ vars.POSTGRES_USER }}"
           --health-interval 5s
           --health-timeout 2s
@@ -93,9 +94,13 @@ jobs:
         env:
           PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
+      - name: Create docker network
+        run: docker network create ci-network
+
       - name: Start Datomic Transactor
         run: |
           docker run -d --name datomic-transactor \
+            --network ci-network \
             -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
             -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
             -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
