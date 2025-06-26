@@ -167,7 +167,6 @@ jobs:
             echo "--- Running migrations ---"
             docker run --env-file=.env --rm \
               --network ci-network \
-              -e JAVA_OPTS="-server -Xms512m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
               -e APP_ENV=prod \
               -e DB_HOST=${{ vars.DB_HOST }} \
               -e DB_USER=${{ vars.DB_USER }} \
