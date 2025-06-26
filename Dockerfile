@@ -13,10 +13,10 @@ RUN clj -X:uberjar && \
     printf '#!/bin/sh\n\
 if [ "$1" = "migrate" ]; then\n\
   echo "Running migrations..."\n\
-  exec clojure -X:migrate\n\
+  exec java -Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -cp $(clojure -Spath) migrate.main\n\
 elif [ "$1" = "app" ]; then\n\
   echo "Starting application..."\n\
-  exec java -Ddatomic.objectCacheMax=64m -Ddatomic.memoryIndexMax=128m -jar target/app.jar\n\
+  exec java -Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -jar target/app.jar\n\
 else\n\
   exec "$@"\n\
 fi' > /usr/local/bin/entrypoint.sh && \

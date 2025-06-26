@@ -125,6 +125,6 @@ bin/run -m datomic.peer-server \
 
 docker run --env-file=.env -d --name datomic-transactor \
             --network ci-network \
-            -e JAVA_OPTS="-server -Xms512m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
+            -e JAVA_OPTS="-server -Xms256m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
             -p 8998:8998 -p 8182:8182 \
             alexandrvirtual/datomic-transactor-prod:1.0.7364
