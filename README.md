@@ -120,3 +120,14 @@ bin/run -m datomic.peer-server \
   -p 9004 \
   -a shum_access,shum_secret \
   -d shum,"datomic:sql://shum?jdbc:postgresql://postgres-instance.cby2c0iga8z1.eu-central-1.rds.amazonaws.com:5432/marketplace?user=marketplace_user&password=marketplace_password&ssl=true&sslmode=require"
+
+## Datomic run transactor
+
+docker run --env-file=.env -d --name datomic-transactor \
+            --network ci-network \
+            -e JAVA_OPTS="-server -Xms512m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
+            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -p 8998:8998 -p 8182:8182 \
+            alexandrvirtual/datomic-transactor-test:1.0.7364
