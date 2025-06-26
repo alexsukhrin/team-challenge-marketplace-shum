@@ -7,6 +7,7 @@ COPY build.clj ./
 COPY src ./src
 COPY resources ./resources
 COPY config ./config
+COPY migrate.clj ./
 
 RUN clj -P
 
