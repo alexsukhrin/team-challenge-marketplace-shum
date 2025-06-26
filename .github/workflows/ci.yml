@@ -26,25 +26,56 @@ jobs:
       DB_USER: ${{ vars.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
-          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --network ci-network
-          --health-cmd "pg_isready -U ${{ vars.POSTGRES_USER }}"
-          --health-interval 5s
-          --health-timeout 2s
-          --health-retries 10
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Create docker network
+        run: docker network create ci-network
+
+      - name: Start Postgres
+        run: |
+          docker run -d --name postgres \
+            --network ci-network \
+            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -p 5432:5432 \
+            postgres:15
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            docker exec postgres pg_isready -U ${{ vars.POSTGRES_USER }} && break
+            sleep 1
+          done
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Start Datomic Transactor container for SQL scripts
+        run: |
+          docker create --name datomic-transactor-init alexandrvirtual/datomic-transactor-test:1.0.7364
+          docker cp datomic-transactor-init:/opt/datomic/datomic-pro-1.0.7364/bin/sql ./datomic-sql
+          docker rm datomic-transactor-init
+
+      - name: Init Datomic Postgres DB
+        run: |
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
+        env:
+          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
+      - name: Start Datomic Transactor
+        run: |
+          docker run -d --name datomic-transactor \
+            --network ci-network \
+            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -p 8998:8998 -p 8182:8182 \
+            alexandrvirtual/datomic-transactor-test:1.0.7364
 
       - name: Prepare java
         uses: actions/setup-java@v3
@@ -69,43 +100,6 @@ jobs:
             .cpcache
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
-
-      - name: Wait for Postgres
-        run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -U ${{ vars.POSTGRES_USER }} && break
-            sleep 1
-          done
-
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Start Datomic Transactor container for SQL scripts
-        run: |
-          docker create --name datomic-transactor-init alexandrvirtual/datomic-transactor-test:1.0.7364
-          docker cp datomic-transactor-init:/opt/datomic/datomic-pro-1.0.7364/bin/sql ./datomic-sql
-          docker rm datomic-transactor-init
-
-      - name: Init Datomic Postgres DB
-        run: |
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
-        env:
-          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-
-      - name: Create docker network
-        run: docker network create ci-network
-
-      - name: Start Datomic Transactor
-        run: |
-          docker run -d --name datomic-transactor \
-            --network ci-network \
-            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
-            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
-            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            -p 8998:8998 -p 8182:8182 \
-            alexandrvirtual/datomic-transactor-test:1.0.7364
 
       - name: Run test DB migrations
         run: clojure -X:migrate
