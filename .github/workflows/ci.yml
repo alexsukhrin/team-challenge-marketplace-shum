@@ -119,6 +119,13 @@ jobs:
       - name: Run tests
         run: clojure -T:build test
 
+      - name: Build and push migrate Docker image
+        run: |
+          IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="${{ github.sha }}"
+          docker build -f Dockerfile.migrate -t "${IMAGE_REPO_LOWER}:migrate-${IMAGE_TAG}" .
+          docker push "${IMAGE_REPO_LOWER}:migrate-${IMAGE_TAG}"
+
   deploy-prod:
     needs: build
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
@@ -174,9 +181,49 @@ jobs:
             docker run --env-file=.env --rm \
               $IMAGE_NAME migrate
 
-            echo "--- Deploying new application container ---"
-            docker run --env-file=.env -d \
-              --name $CONTAINER_NAME \
-              --restart always \
-              -p 4000:4000 \
-              $IMAGE_NAME app
+  migrate-prod:
+    name: Run DB migrations on prod
+    runs-on: ubuntu-latest
+    environment: prod
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      packages: write
+    needs: build
+    # Дозволяє запускати вручну
+    workflow_dispatch:
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run migrations on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            IMAGE_NAME="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+            CONTAINER_NAME="marketplace-shum-app"
+
+            echo "--- Pulling new image: $IMAGE_NAME ---"
+            docker pull $IMAGE_NAME
+
+            echo "--- Stopping and removing app container before migrations (if running) ---"
+            if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                docker stop $CONTAINER_NAME
+                docker rm -f $CONTAINER_NAME || true
+            fi
+
+            echo "--- Running migrations ---"
+            docker run --env-file=.env --rm \
+              $IMAGE_NAME migrate

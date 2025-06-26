@@ -1,0 +1,12 @@
+FROM clojure:temurin-11-tools-deps
+
+WORKDIR /app
+
+COPY deps.edn ./
+COPY migrate.clj ./
+COPY resources ./resources
+COPY config ./config
+
+RUN clojure -P
+
+ENTRYPOINT ["clojure", "-M", "-m", "migrate"] 

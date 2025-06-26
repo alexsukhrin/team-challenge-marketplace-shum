@@ -1,28 +1,25 @@
-FROM clojure:openjdk-17-tools-deps
+FROM clojure:openjdk-17-tools-deps AS build
 WORKDIR /app
 
-# Спочатку копіюємо залежності для кешування
-COPY deps.edn .
+# Копіюємо залежності для кешування
+COPY deps.edn ./
 RUN clj -P
 
-# Копіюємо решту файлів
+# Копіюємо код і ресурси
 COPY . .
 
-# Збираємо uberjar і створюємо entrypoint-скрипт
-RUN clj -X:uberjar && \
-    printf '#!/bin/sh\n\
-if [ "$1" = "migrate" ]; then\n\
-  echo "Running migrations..."\n\
-  exec java -Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -cp $(clojure -Spath) migrate.main\n\
-elif [ "$1" = "app" ]; then\n\
-  echo "Starting application..."\n\
-  exec java -Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -jar target/app.jar\n\
-else\n\
-  exec "$@"\n\
-fi' > /usr/local/bin/entrypoint.sh && \
-    chmod +x /usr/local/bin/entrypoint.sh
+# Збираємо uberjar
+RUN clojure -T:build uber
 
-ENTRYPOINT ["entrypoint.sh"]
+# ---
+# Runtime image
+FROM eclipse-temurin:17-jre
+WORKDIR /app
 
-# За замовчуванням буде запускатися додаток
-CMD ["app"]
+COPY --from=build /app/target/app.jar ./app.jar
+COPY --from=build /app/config ./config
+COPY --from=build /app/resources ./resources
+
+ENV JAVA_OPTS="-Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

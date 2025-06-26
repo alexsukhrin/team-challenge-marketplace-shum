@@ -128,3 +128,42 @@ docker run --env-file=.env -d --name datomic-transactor \
             -e JAVA_OPTS="-server -Xms256m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
             -p 8998:8998 -p 8182:8182 \
             alexandrvirtual/datomic-transactor-prod:1.0.7364
+
+## 🐳 Docker-образи: app і migrate
+
+### Production API (app)
+- Збирається з `Dockerfile`.
+- Містить лише сервер API (uberjar, config, resources).
+- Не містить логіки для міграцій.
+- Запуск:
+  ```sh
+  docker run --env-file=.env -d \
+    --name marketplace-shum-app \
+    -p 4000:4000 \
+    ghcr.io/<your-repo>:<sha>
+  ```
+
+### Міграції Datomic (migrate)
+- Збирається з `Dockerfile.migrate`.
+- Містить лише код і залежності для міграцій.
+- Не містить серверу API.
+- Запуск міграцій:
+  ```sh
+  docker run --env-file=.env --rm \
+    ghcr.io/<your-repo>:migrate-<sha>
+  ```
+
+### CI/CD
+- Образи збираються і пушаться автоматично у GitHub Actions:
+  - app: `ghcr.io/<repo>:<sha>`
+  - migrate: `ghcr.io/<repo>:migrate-<sha>`
+- Міграції запускаються окремим workflow (`migrate.yml`), вручну через GitHub UI.
+- Деплой app-контейнера не запускає міграції автоматично.
+
+### Локальний запуск міграцій
+- Можна запускати через Docker або напряму:
+  ```sh
+  clojure -M -m migrate
+  ```
+
+---
