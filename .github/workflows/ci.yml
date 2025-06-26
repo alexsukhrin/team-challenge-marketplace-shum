@@ -190,8 +190,6 @@ jobs:
       contents: read
       packages: write
     needs: build
-    # Дозволяє запускати вручну
-    workflow_dispatch:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
