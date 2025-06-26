@@ -118,3 +118,89 @@ jobs:
 
       - name: Run tests
         run: clojure -T:build test
+
+  deploy-prod:
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      APP_ENV: ${{ vars.APP_ENV }}
+      PORT: ${{ vars.PORT }}
+      HOST: ${{ vars.HOST }}
+      EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+      EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+      EMAIL_USER: ${{ vars.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DB_HOST: ${{ vars.DB_HOST }}
+      DB_USER: ${{ vars.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        id: build_image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          docker build -t marketplace-shum:${IMAGE_TAG} .
+
+      - name: Save Docker image to a file
+        run: docker save marketplace-shum:${{ steps.build_image.outputs.IMAGE_TAG }} -o marketplace-shum.tar
+
+      - name: Copy Docker image to EC2
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ vars.HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "marketplace-shum.tar"
+          target: "/home/ec2-user/app"
+
+      - name: Run migrations on prod
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export APP_ENV=prod
+            # Додайте інші змінні, якщо вони потрібні для міграцій
+            # export DB_USER=${{ vars.DB_USER }}
+            cd /home/ec2-user/app
+            clojure -X:migrate
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/app
+            
+            docker load < marketplace-shum.tar
+            
+            IMAGE_TAG=${{ github.sha }}
+            CONTAINER_NAME="marketplace-shum"
+            IMAGE_NAME="marketplace-shum:${IMAGE_TAG}"
+
+            if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                docker stop $CONTAINER_NAME
+                docker rm $CONTAINER_NAME
+            fi
+
+            docker run --env-file=env -d \
+              --name $CONTAINER_NAME \
+              --restart always \
+              -it -p 8032:4000 \
+              $IMAGE_NAME
+            
+            rm marketplace-shum.tar
