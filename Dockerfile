@@ -3,6 +3,7 @@ WORKDIR /app
 
 # Копіюємо всі файли проекту
 COPY . .
+COPY entrypoint.sh .
 
 # (Опційно) Встановити Clojure, якщо потрібно (для Alpine)
 # RUN apk add --no-cache bash curl && \
@@ -12,5 +13,8 @@ COPY . .
 #     rm linux-install-1.11.1.1273.sh
 
 EXPOSE 7888
+EXPOSE 4000
 
-ENTRYPOINT ["clojure", "-M", "-m", "nrepl.cmdline", "--port", "7888"]
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
