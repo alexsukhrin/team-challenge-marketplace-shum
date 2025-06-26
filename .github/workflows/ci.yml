@@ -87,7 +87,7 @@ jobs:
 
       - name: Init Datomic Postgres DB
         run: |
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -f datomic-sql/postgres-db.sql
+          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
           psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
           psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
         env:
