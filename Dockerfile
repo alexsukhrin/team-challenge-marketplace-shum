@@ -14,8 +14,6 @@ WORKDIR /app
 COPY --from=builder /app/target/app.jar ./app.jar
 
 # Виставляємо ліміти JVM (можна перевизначити через docker run)
-ENV JAVA_OPTS="-Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
-
 EXPOSE 4000
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
