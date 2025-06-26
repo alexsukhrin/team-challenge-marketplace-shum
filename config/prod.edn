@@ -9,16 +9,17 @@
             #env DB_PASS
             "&ssl=true&sslmode=require"]}
 
- :web-server
- {:port 4000}
+ :web-server 
+ {:port #long #env PORT 
+  :host #env HOST}
 
  :jwt-secret #env JWT_SECRET
 
  :email {:host   #env EMAIL_HOST
-         :port   #env EMAIL_PORT
+         :port   #long #env EMAIL_PORT
          :user   #env EMAIL_USER
          :pass   #env EMAIL_PASS
          :from   #env EMAIL_FROM
-         :tls    false}
+         :tls    true}
 
  :app {:base-url #env BASE_URL}}

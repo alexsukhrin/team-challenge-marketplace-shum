@@ -56,4 +56,6 @@
             :ns-default build}
 
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
-          :ns-default build}}}
+          :ns-default build}
+
+  :migrate {:ns-default migrate :exec-fn migrate/main}}}
