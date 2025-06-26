@@ -184,7 +184,7 @@ jobs:
             echo "--- Deploying new application container ---"
             docker run --env-file=.env -d \
               --name "$CONTAINER_NAME" -m 300m \
-              -e 'JAVA_OPTS=-Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=16m -Ddatomic.memoryIndexMax=16m' \
+              -e 'JAVA_OPTS=-Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m' \
               --restart always \
               -p 8032:4000 \
               "$IMAGE_NAME"
