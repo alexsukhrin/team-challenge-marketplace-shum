@@ -1,7 +1,7 @@
 {:http-port 8080
  :datomic
  {:db-uri #join
-           ["datomic:sql://shum?jdbc:postgresql://"
+           ["datomic:sql://shum-prod?jdbc:postgresql://"
             #env DB_HOST
             ":5432/marketplace?user="
             #env DB_USER
