@@ -1,30 +1,28 @@
-# Stage 1: Build the uberjar
-FROM clojure:openjdk-17-tools-deps AS build
+FROM clojure:openjdk-17-tools-deps
 WORKDIR /app
 
-# Copy project files
+# Спочатку копіюємо залежності для кешування
 COPY deps.edn .
-COPY src src
-COPY resources resources
-COPY config config
-COPY config/prod.edn resources/config/prod.edn
-COPY build.clj .
+RUN clj -P
 
-# Create the uberjar
-RUN clj -X:uberjar
-RUN cp target/app.jar app.jar
+# Копіюємо решту файлів
+COPY . .
 
-# Stage 2: Create the final production image
-FROM eclipse-temurin:17-jre-focal
-WORKDIR /app
+# Збираємо uberjar і створюємо entrypoint-скрипт
+RUN clj -X:uberjar && \
+    printf '#!/bin/sh\n\
+if [ "$1" = "migrate" ]; then\n\
+  echo "Running migrations..."\n\
+  exec clojure -X:migrate\n\
+elif [ "$1" = "app" ]; then\n\
+  echo "Starting application..."\n\
+  exec java -jar target/app.jar\n\
+else\n\
+  exec "$@"\n\
+fi' > /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
 
-# Copy the uberjar from the build stage
-COPY --from=build /app/app.jar .
-COPY --from=build /app/config config
+ENTRYPOINT ["entrypoint.sh"]
 
-# Expose the application port
-EXPOSE 4000
-
-# Set the entrypoint to run the application
-# We also pass the ENV variable to use the production config
-CMD ["java", "-DENV=prod", "-jar", "app.jar"] 
+# За замовчуванням буде запускатися додаток
+CMD ["app"] 

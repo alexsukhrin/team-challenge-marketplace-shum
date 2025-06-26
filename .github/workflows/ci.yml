@@ -128,98 +128,67 @@ jobs:
       contents: read
       packages: write
 
-    env:
-      ACTIVEMQ_BROKER_URL: tcp://activemq:61616
-      APP_ENV: ${{ vars.APP_ENV }}
-      PORT: ${{ vars.PORT }}
-      HOST: ${{ vars.HOST }}
-      EMAIL_PORT: ${{ vars.EMAIL_PORT }}
-      EMAIL_HOST: ${{ vars.EMAIL_HOST }}
-      EMAIL_USER: ${{ vars.EMAIL_USER }}
-      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      DB_HOST: ${{ vars.DB_HOST }}
-      DB_USER: ${{ vars.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        id: build_image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          docker build -t marketplace-shum:${IMAGE_TAG} .
-
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tag Docker image for GHCR
+      - name: Build and push Docker image
+        id: build_and_push
         run: |
-          IMAGE_TAG=${{ steps.build_image.outputs.IMAGE_TAG }}
-          docker tag marketplace-shum:${IMAGE_TAG} ghcr.io/${{ github.repository_owner }}/marketplace-shum:${IMAGE_TAG}
+          IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="${{ github.sha }}"
+          echo "IMAGE_NAME=${IMAGE_REPO_LOWER}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          
+          docker build -t "${IMAGE_REPO_LOWER}:${IMAGE_TAG}" .
+          docker push "${IMAGE_REPO_LOWER}:${IMAGE_TAG}"
 
-      - name: Push Docker image to GHCR
-        run: |
-          IMAGE_TAG=${{ steps.build_image.outputs.IMAGE_TAG }}
-          docker push ghcr.io/${{ github.repository_owner }}/marketplace-shum:${IMAGE_TAG}
-
-      - name: Deploy on EC2 (pull image from registry)
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ github.repository_owner }}/marketplace-shum:${{ github.sha }}
-            # Add your deployment steps here, e.g., docker run or docker-compose up
+            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Run migrations on prod
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            export APP_ENV=prod
-            # Додайте інші змінні, якщо вони потрібні для міграцій
-            # export DB_USER=${{ vars.DB_USER }}
-            cd /home/ec2-user/app
-            clojure -X:migrate
+            IMAGE_NAME="${{ steps.build_and_push.outputs.IMAGE_NAME }}"
+            CONTAINER_NAME="marketplace-shum-app"
 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ec2-user/app
+            echo "--- Pulling new image: $IMAGE_NAME ---"
+            docker pull $IMAGE_NAME
+
+            echo "--- Running migrations ---"
+            docker run --env-file=.env --rm \
+              --network ci-network \
+              -e JAVA_OPTS="-server -Xms512m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
+              -e APP_ENV=prod \
+              -e DB_HOST=${{ vars.DB_HOST }} \
+              -e DB_USER=${{ vars.DB_USER }} \
+              -e DB_PASS=${{ secrets.DB_PASS }} \
+              -e POSTGRES_DB=${{ vars.DB_NAME }} \
+              $IMAGE_NAME migrate
             
-            docker load < marketplace-shum.tar
-            
-            IMAGE_TAG=${{ github.sha }}
-            CONTAINER_NAME="marketplace-shum"
-            IMAGE_NAME="marketplace-shum:${IMAGE_TAG}"
-
+            echo "--- Deploying new application container ---"
             if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
                 docker stop $CONTAINER_NAME
                 docker rm $CONTAINER_NAME
             fi
 
-            docker run --env-file=env -d \
+            docker run -d \
               --name $CONTAINER_NAME \
               --restart always \
-              -it -p 8032:4000 \
-              $IMAGE_NAME
-            
-            rm marketplace-shum.tar
+              --network=host \
+              -p 4000:4000 \
+              -e APP_ENV=prod \
+              -e DB_HOST=${{ vars.DB_HOST }} \
+              -e DB_USER=${{ vars.DB_USER }} \
+              -e DB_PASS=${{ secrets.DB_PASS }} \
+              -e POSTGRES_DB=${{ vars.DB_NAME }} \
+              $IMAGE_NAME app
