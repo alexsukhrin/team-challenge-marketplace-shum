@@ -166,28 +166,16 @@ jobs:
 
             echo "--- Running migrations ---"
             docker run --env-file=.env --rm \
-              --network ci-network \
-              -e APP_ENV=prod \
-              -e DB_HOST=${{ vars.DB_HOST }} \
-              -e DB_USER=${{ vars.DB_USER }} \
-              -e DB_PASS=${{ secrets.DB_PASS }} \
-              -e POSTGRES_DB=${{ vars.DB_NAME }} \
               $IMAGE_NAME migrate
             
             echo "--- Deploying new application container ---"
             if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
                 docker stop $CONTAINER_NAME
-                docker rm $CONTAINER_NAME
+                docker rm -f $CONTAINER_NAME || true
             fi
 
-            docker run -d \
+            docker run --env-file=.env -d \
               --name $CONTAINER_NAME \
               --restart always \
-              --network=host \
               -p 4000:4000 \
-              -e APP_ENV=prod \
-              -e DB_HOST=${{ vars.DB_HOST }} \
-              -e DB_USER=${{ vars.DB_USER }} \
-              -e DB_PASS=${{ secrets.DB_PASS }} \
-              -e POSTGRES_DB=${{ vars.DB_NAME }} \
               $IMAGE_NAME app
