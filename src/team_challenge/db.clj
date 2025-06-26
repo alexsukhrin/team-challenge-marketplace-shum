@@ -40,4 +40,3 @@
              (apply-schemas conn schema-files)
              conn))
   :stop (when conn (.release conn)))
-
