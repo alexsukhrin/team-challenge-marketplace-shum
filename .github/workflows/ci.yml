@@ -7,7 +7,8 @@ on:
     branches: ["*"]
 
 jobs:
-  build:
+  test:
+    if: github.event_name == 'pull_request'
     environment: test
     runs-on: ubuntu-latest
 
@@ -187,5 +188,5 @@ jobs:
               -e DATOMIC_OBJECT_CACHE_MAX=32m \
               -e DATOMIC_MEMORY_INDEX_MAX=32m \
               --restart always \
-              -p 8032:4000 -p 7888:7888 \
+              -p 8032:4000 \
               $IMAGE_NAME

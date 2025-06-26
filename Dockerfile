@@ -1,20 +1,21 @@
-FROM clojure:openjdk-17-tools-deps
+# Етап 1: build uberjar
+FROM clojure:openjdk-17-tools-deps AS builder
 WORKDIR /app
+COPY deps.edn .
+COPY build.clj .
+COPY src ./src
+COPY resources ./resources
+COPY config ./config
+RUN clojure -T:uberjar
 
-# Копіюємо всі файли проекту
-COPY . .
-COPY entrypoint.sh .
+# Етап 2: мінімальний runtime
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=builder /app/target/app.jar ./app.jar
 
-# (Опційно) Встановити Clojure, якщо потрібно (для Alpine)
-# RUN apk add --no-cache bash curl && \
-#     curl -O https://download.clojure.org/install/linux-install-1.11.1.1273.sh && \
-#     chmod +x linux-install-1.11.1.1273.sh && \
-#     ./linux-install-1.11.1.1273.sh && \
-#     rm linux-install-1.11.1.1273.sh
+# Виставляємо ліміти JVM (можна перевизначити через docker run)
+ENV JAVA_OPTS="-Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
 
-EXPOSE 7888
 EXPOSE 4000
 
-RUN chmod +x entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
