@@ -184,5 +184,5 @@ jobs:
             docker run --env-file=.env -d \
               --name $CONTAINER_NAME \
               --restart always \
-              -p 8032:4000 \
+              -p 8032:4000 -p 7888:7888 \
               $IMAGE_NAME

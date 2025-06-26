@@ -20,7 +20,8 @@ WORKDIR /app
 COPY --from=build /app/target/app.jar ./app.jar
 COPY --from=build /app/config ./config
 COPY --from=build /app/resources ./resources
+COPY --from=build /app/migrate.clj ./migrate.clj
 
 ENV JAVA_OPTS="-Xmx256m -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m"
 
-ENTRYPOINT ["sh", "-c", "clojure -M -m migrate && java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "clojure -m nrepl.cmdline --port 7888 & clojure -M -m migrate && java $JAVA_OPTS -jar app.jar"]
