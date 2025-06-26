@@ -24,6 +24,7 @@ COPY --from=build /app/target/app.jar ./app.jar
 COPY --from=build /app/config ./config
 COPY --from=build /app/resources ./resources
 COPY --from=build /app/migrate.clj ./migrate.clj
+COPY --from=build /app/src ./src
 COPY entrypoint.sh ./entrypoint.sh
 RUN apk add --no-cache bash curl && \
     curl -O https://download.clojure.org/install/linux-install-1.11.1.1273.sh && \
