@@ -10,6 +10,7 @@ RUN clojure -T:uberjar
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=builder /app/target/app.jar ./app.jar
+COPY --from=builder /app/config/ ./config
 
 EXPOSE 4000
 
