@@ -152,17 +152,33 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           docker build -t marketplace-shum:${IMAGE_TAG} .
 
-      - name: Save Docker image to a file
-        run: docker save marketplace-shum:${{ steps.build_image.outputs.IMAGE_TAG }} -o marketplace-shum.tar
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Copy Docker image to EC2
-        uses: appleboy/scp-action@v1.0.0
+      - name: Tag Docker image for GHCR
+        run: |
+          IMAGE_TAG=${{ steps.build_image.outputs.IMAGE_TAG }}
+          docker tag marketplace-shum:${IMAGE_TAG} ghcr.io/${{ github.repository_owner }}/marketplace-shum:${IMAGE_TAG}
+
+      - name: Push Docker image to GHCR
+        run: |
+          IMAGE_TAG=${{ steps.build_image.outputs.IMAGE_TAG }}
+          docker push ghcr.io/${{ github.repository_owner }}/marketplace-shum:${IMAGE_TAG}
+
+      - name: Deploy on EC2 (pull image from registry)
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "marketplace-shum.tar"
-          target: "/home/ec2-user/app"
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/${{ github.repository_owner }}/marketplace-shum:${{ github.sha }}
+            # Add your deployment steps here, e.g., docker run or docker-compose up
 
       - name: Run migrations on prod
         uses: appleboy/ssh-action@v1.0.3
