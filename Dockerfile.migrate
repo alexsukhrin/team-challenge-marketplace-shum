@@ -9,4 +9,4 @@ COPY config ./config
 
 RUN clojure -P
 
-ENTRYPOINT ["clojure", "-M", "-m", "migrate"] 
+ENTRYPOINT ["clojure", "-M", "-m", "migrate"]
