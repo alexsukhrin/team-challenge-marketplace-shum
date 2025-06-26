@@ -16,7 +16,7 @@ if [ "$1" = "migrate" ]; then\n\
   exec clojure -X:migrate\n\
 elif [ "$1" = "app" ]; then\n\
   echo "Starting application..."\n\
-  exec java -jar target/app.jar\n\
+  exec java -Ddatomic.objectCacheMax=64m -Ddatomic.memoryIndexMax=128m -jar target/app.jar\n\
 else\n\
   exec "$@"\n\
 fi' > /usr/local/bin/entrypoint.sh && \
