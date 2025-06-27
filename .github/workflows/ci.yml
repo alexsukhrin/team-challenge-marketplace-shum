@@ -105,11 +105,12 @@ jobs:
       - name: List config files
         run: ls -l config
 
-      - name: Download Datomic Pro
+      - name: Download and install Datomic Pro
         run: |
           mkdir -p lib
           curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
           unzip lib/datomic-pro-1.0.7364.zip -d lib
+          lib/datomic-pro-1.0.7364/bin/maven-install
           rm lib/datomic-pro-1.0.7364.zip
 
       - name: Run test DB migrations
