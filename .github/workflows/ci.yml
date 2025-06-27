@@ -110,9 +110,10 @@ jobs:
           mkdir -p lib
           curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
           unzip lib/datomic-pro-1.0.7364.zip -d lib
-          mv lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364/* lib/datomic-pro-1.0.7364/
-          rmdir lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364
           rm lib/datomic-pro-1.0.7364.zip
+
+      - name: Check extracted content
+        run: ls -R lib/datomic-pro-1.0.7364
 
       - name: Run test DB migrations
         run: clojure -X:migrate
