@@ -1,6 +1,7 @@
 FROM clojure:openjdk-17-tools-deps AS builder
 WORKDIR /app
 COPY deps.edn .
+COPY lib .
 COPY build.clj .
 COPY src ./src
 COPY resources ./resources
