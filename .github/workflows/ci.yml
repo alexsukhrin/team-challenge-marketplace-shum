@@ -112,24 +112,22 @@ jobs:
           key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
           restore-keys: m2-
 
-      - name: Download and install Datomic Pro
+      - name: Download Datomic Pro
         run: |
           mkdir -p lib
           curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
           unzip lib/datomic-pro-1.0.7364.zip -d lib
-          cd lib/datomic-pro-1.0.7364
-          ./bin/maven-install
-          cd ../../
           rm lib/datomic-pro-1.0.7364.zip
 
-      - name: Show maven-install log
-        run: cat lib/datomic-pro-1.0.7364/install.log || true
-
-      - name: List files in Datomic Pro dir
-        run: ls -l lib/datomic-pro-1.0.7364
-
-      - name: List installed Datomic Pro in Maven repo
-        run: ls -l ~/.m2/repository/com/datomic/datomic-pro/1.0.7364 || true
+      - name: Manually install Datomic Pro jar
+        run: |
+          mvn install:install-file \
+            -Dfile=lib/datomic-pro-1.0.7364/peer-1.0.7364.jar \
+            -DpomFile=lib/datomic-pro-1.0.7364/pom.xml \
+            -DgroupId=com.datomic \
+            -DartifactId=datomic-pro \
+            -Dversion=1.0.7364 \
+            -Dpackaging=jar
 
       - name: Run test DB migrations
         run: clojure -X:migrate
