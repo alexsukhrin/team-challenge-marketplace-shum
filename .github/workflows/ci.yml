@@ -115,6 +115,11 @@ jobs:
       - name: Check extracted content
         run: ls -R lib/datomic-pro-1.0.7364
 
+      - name: Install Datomic Pro to local Maven repo
+        run: |
+          chmod +x lib/datomic-pro-1.0.7364/bin/maven-install
+          lib/datomic-pro-1.0.7364/bin/maven-install
+
       - name: Run test DB migrations
         run: clojure -X:migrate
 
