@@ -201,9 +201,6 @@ jobs:
             -Dversion=1.0.7364 \
             -Dpackaging=jar
 
-      - name: Run prod DB migrations
-        run: clojure -X:migrate
-
       - name: Build and push Docker image
         run: |
           IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
@@ -238,3 +235,5 @@ jobs:
               --restart always \
               -p 8032:4000 \
               "$IMAGE_NAME"
+            echo "--- Running DB migrations in production ---"
+            docker exec $CONTAINER_NAME clojure -X:migrate
