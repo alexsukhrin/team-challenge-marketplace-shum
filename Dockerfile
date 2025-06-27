@@ -1,7 +1,6 @@
 FROM clojure:openjdk-17-tools-deps AS builder
 WORKDIR /app
 COPY deps.edn .
-COPY lib .
 COPY build.clj .
 COPY src ./src
 COPY resources ./resources
@@ -20,8 +19,13 @@ RUN apt-get update && apt-get install -y unzip curl maven \
       -Dversion=1.0.7364 \
       -Dpackaging=jar
 
+RUN ls -l
+
 RUN clojure -T:uberjar
+RUN ls -lR target
+
 RUN clojure -T:uberjar-migrate
+RUN ls -lR target
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
