@@ -129,7 +129,7 @@ docker run --env-file=.env -d --name datomic-transactor \
             -p 8998:8998 -p 8182:8182 \
             alexandrvirtual/datomic-transactor-prod:1.0.7364
 
-nohup bin/transactor -Xms128m -Xmx256m config/samples/sql-transactor-template.properties > transactor.log 2>&1 &
+nohup bin/transactor -Xms64m -Xmx128m config/samples/sql-transactor-template.properties > transactor.log 2>&1 &
 
 tail -f transactor.log
 
