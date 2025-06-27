@@ -105,6 +105,13 @@ jobs:
       - name: List config files
         run: ls -l config
 
+      - name: Cache Maven local repo
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
+          restore-keys: m2-
+
       - name: Download and install Datomic Pro
         run: |
           mkdir -p lib
