@@ -249,4 +249,4 @@ jobs:
               -p 8032:4000 \
               "$IMAGE_NAME"
             echo "--- Running DB migrations in production ---"
-            docker exec $CONTAINER_NAME clojure -X:migrate || (echo '❌ Migration failed!' && docker logs $CONTAINER_NAME && exit 1)
+            docker exec $CONTAINER_NAME java -cp app-migrate.jar migrate || (echo '❌ Migration failed!' && docker logs $CONTAINER_NAME && exit 1)
