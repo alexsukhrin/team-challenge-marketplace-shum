@@ -3,7 +3,8 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [aero.core :as aero]))
+            [aero.core :as aero])
+  (:gen-class))
 
 (defn create-db-if-needed [uri]
   (try
@@ -27,7 +28,9 @@
           _ (d/transact conn schema)]
       (println "✅ Schema applied from" file))))
 
-(defn ^:exec main [& _]
+(defn -main 
+  "Start migration"
+  []
   (println "--- Starting Datomic migration ---")
   (let [env (or (System/getenv "APP_ENV") "dev")
         _ (println "APP_ENV=" env)
@@ -44,6 +47,3 @@
       (println "Found schema files:" schema-files)
       (apply-schemas conn schema-files)
       (println "✅ All schemas applied!"))))
-
-(defn -main [& args]
-  (apply main args))

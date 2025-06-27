@@ -41,3 +41,5 @@ target
 *.log
 
 lib/
+target-migrate/
+META-INF/

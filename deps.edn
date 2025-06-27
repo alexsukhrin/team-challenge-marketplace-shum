@@ -59,7 +59,7 @@
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
           :ns-default build}
 
-  :migrate {:ns-default team-challenge.migrate :exec-fn main}
+  :migrate {:main-opts ["-m" "team-challenge.marketplace-shum"]}
 
   :uberjar-migrate {:replace-deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
                    :exec-fn build/uber-migrate
