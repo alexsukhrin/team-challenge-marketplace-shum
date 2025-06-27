@@ -110,7 +110,9 @@ jobs:
           mkdir -p lib
           curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
           unzip lib/datomic-pro-1.0.7364.zip -d lib
-          lib/datomic-pro-1.0.7364/bin/maven-install
+          cd lib/datomic-pro-1.0.7364
+          ./bin/maven-install
+          cd ../../
           rm lib/datomic-pro-1.0.7364.zip
 
       - name: Run test DB migrations
