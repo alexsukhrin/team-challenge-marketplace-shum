@@ -39,3 +39,5 @@ datomic-pro/
 target/
 target
 *.log
+
+lib/

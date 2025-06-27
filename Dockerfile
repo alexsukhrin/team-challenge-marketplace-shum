@@ -7,6 +7,7 @@ COPY src ./src
 COPY resources ./resources
 COPY config ./config
 RUN clojure -T:uberjar
+RUN tree
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
