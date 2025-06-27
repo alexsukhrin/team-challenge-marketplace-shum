@@ -7,28 +7,10 @@
             [team-challenge.web :as web]
             [team-challenge.db :as db]
             [team-challenge.config :as config]
-            [datomic.api :as d]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
             [team-challenge.service.email-service :as email-service]))
 
 (defn parse-body [resp]
   (json/parse-string (:body resp) true))
-
-(defn create-test-db-and-load-schema []
-  (let [uri (get-in config/*config* [:datomic :db-uri])
-        _ (try (d/create-database uri) (catch Exception _ nil))
-        conn (d/connect uri)
-        schema-dir "resources/schema"
-        schema-files (->> (io/file schema-dir)
-                          file-seq
-                          (filter #(.isFile %))
-                          (filter #(clojure.string/ends-with? (.getName %) ".edn"))
-                          (map #(.getPath %)))]
-    (doseq [file schema-files]
-      (let [schema (edn/read-string (slurp file))]
-        (d/transact conn schema)))))
 
 (defn mock-send-confirmation-email [& _]
   (println "[MOCK] send-confirmation-email called"))

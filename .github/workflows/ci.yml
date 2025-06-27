@@ -1,20 +1,19 @@
 name: CI
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: ["*"]
+  push:
+    branches: [master]
 
 jobs:
   test:
     if: github.event_name == 'pull_request'
-    environment: test
     runs-on: ubuntu-latest
-
+    environment: test
     env:
-      ACTIVEMQ_BROKER_URL: tcp://activemq:61616
-      APP_ENV: ${{ vars.APP_ENV }}
+      APP_ENV: test
+      ACTIVEMQ_BROKER_URL: ${{ vars.ACTIVEMQ_BROKER_URL }}
       PORT: ${{ vars.PORT }}
       HOST: ${{ vars.HOST }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
@@ -26,7 +25,9 @@ jobs:
       DB_HOST: ${{ vars.DB_HOST }}
       DB_USER: ${{ vars.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
-
+      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+      POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,16 +39,16 @@ jobs:
         run: |
           docker run -d --name postgres \
             --network ci-network \
-            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
-            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
-            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -e POSTGRES_DB=${{ env.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} \
             -p 5432:5432 \
             postgres:15
 
       - name: Wait for Postgres
         run: |
           for i in {1..30}; do
-            docker exec postgres pg_isready -U ${{ vars.POSTGRES_USER }} && break
+            docker exec postgres pg_isready -U ${{ env.POSTGRES_USER }} && break
             sleep 1
           done
 
@@ -62,27 +63,21 @@ jobs:
 
       - name: Init Datomic Postgres DB
         run: |
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
-          psql -h localhost -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
         env:
-          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
 
       - name: Start Datomic Transactor
         run: |
           docker run -d --name datomic-transactor \
             --network ci-network \
-            -e POSTGRES_DB=${{ vars.POSTGRES_DB }} \
-            -e POSTGRES_USER=${{ vars.POSTGRES_USER }} \
-            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -e POSTGRES_DB=${{ env.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} \
             -p 8998:8998 -p 8182:8182 \
             alexandrvirtual/datomic-transactor-test:1.0.7364
-
-      - name: Prepare java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '11'
 
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@13.4
@@ -102,6 +97,30 @@ jobs:
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
 
+      - name: Cache Maven local repo
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
+          restore-keys: m2-
+
+      - name: Download Datomic Pro
+        run: |
+          mkdir -p lib
+          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
+          unzip lib/datomic-pro-1.0.7364.zip -d lib
+          rm lib/datomic-pro-1.0.7364.zip
+
+      - name: Manually install Datomic Pro jar
+        run: |
+          mvn install:install-file \
+            -Dfile=lib/datomic-pro-1.0.7364/peer-1.0.7364.jar \
+            -DpomFile=lib/datomic-pro-1.0.7364/pom.xml \
+            -DgroupId=com.datomic \
+            -DartifactId=datomic-pro \
+            -Dversion=1.0.7364 \
+            -Dpackaging=jar
+
       - name: Run test DB migrations
         run: clojure -X:migrate
 
@@ -111,76 +130,106 @@ jobs:
       - name: Run cljfmt check
         run: cljfmt check
 
-      - name: Print APP_ENV
-        run: echo $APP_ENV
-
-      - name: List config files
-        run: ls -l config
-
       - name: Run tests
         run: clojure -T:build test
 
-  build-app:
+      - name: Build test Docker image
+        run: docker build -t my-app:test .
+
+  build-prod:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      image_name: ${{ steps.build_and_push.outputs.IMAGE_NAME }}
+    needs: []
+    environment: prod
+    env:
+      APP_ENV: prod
+      ACTIVEMQ_BROKER_URL: ${{ vars.ACTIVEMQ_BROKER_URL }}
+      PORT: ${{ vars.PORT }}
+      HOST: ${{ vars.HOST }}
+      EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+      EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+      EMAIL_USER: ${{ vars.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DB_HOST: ${{ vars.DB_HOST }}
+      DB_USER: ${{ vars.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@13.4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          cli: 1.12.1.1550
+          clj-kondo: 2022.05.31
+          cljfmt: 0.10.2
+
+      - name: Cache clojure dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+            .cpcache
+          key: cljdeps-${{ hashFiles('deps.edn') }}
+          restore-keys: cljdeps-
+
+      - name: Cache Maven local repo
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
+          restore-keys: m2-
+
+      - name: Download Datomic Pro
+        run: |
+          mkdir -p lib
+          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
+          unzip lib/datomic-pro-1.0.7364.zip -d lib
+          rm lib/datomic-pro-1.0.7364.zip
+
+      - name: Manually install Datomic Pro jar
+        run: |
+          mvn install:install-file \
+            -Dfile=lib/datomic-pro-1.0.7364/peer-1.0.7364.jar \
+            -DpomFile=lib/datomic-pro-1.0.7364/pom.xml \
+            -DgroupId=com.datomic \
+            -DartifactId=datomic-pro \
+            -Dversion=1.0.7364 \
+            -Dpackaging=jar
+
+      - name: Run prod DB migrations
+        run: clojure -X:migrate
 
       - name: Build and push Docker image
-        id: build_and_push
         run: |
           IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG="${{ github.sha }}"
-          echo "IMAGE_NAME=${IMAGE_REPO_LOWER}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
           docker build -t "${IMAGE_REPO_LOWER}:${IMAGE_TAG}" .
           docker push "${IMAGE_REPO_LOWER}:${IMAGE_TAG}"
-
-  deploy-prod:
-    needs: build-app
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: prod
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ vars.HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            IMAGE_NAME="${{ needs.build-app.outputs.image_name }}"
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            IMAGE_TAG="${{ github.sha }}"
+            IMAGE_NAME="${IMAGE_REPO_LOWER}:${IMAGE_TAG}"
             CONTAINER_NAME="marketplace-shum-app"
-
             echo "--- Pulling new image: $IMAGE_NAME ---"
             docker pull $IMAGE_NAME
-
             echo "--- Stopping and removing app container before migrations (if running) ---"
             if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
                 docker stop $CONTAINER_NAME
                 docker rm -f $CONTAINER_NAME || true
             fi
-
             echo "--- Deploying new application container ---"
             docker run --env-file=.env -d \
               --network shum-net \
