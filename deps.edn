@@ -59,4 +59,10 @@
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
           :ns-default build}
 
-  :migrate {:ns-default migrate :exec-fn migrate/main}}}
+  :migrate {:ns-default migrate :exec-fn migrate/main}
+
+  :uberjar-migrate {:replace-deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
+                   :exec-fn build/uber-migrate
+                   :exec-args {:uber-file "target/app-migrate.jar"}
+                   :ns-default build}
+}}

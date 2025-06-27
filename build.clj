@@ -52,3 +52,18 @@
     (println "\nBuilding JAR...")
     (b/uber opts))
   opts)
+
+(defn uber-migrate
+  "Build an uberjar for migrations."
+  [{:keys [uber-file] :as opts}]
+  (b/delete {:path "target"})
+  (let [opts (merge (uber-opts opts)
+                    {:main 'migrate
+                     :uber-file (or uber-file "target/app-migrate.jar")})]
+    (println "\nCopying source...")
+    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
+    (println (str "\nCompiling migrate ..."))
+    (b/compile-clj opts)
+    (println "\nBuilding migration JAR...")
+    (b/uber opts))
+  opts)
