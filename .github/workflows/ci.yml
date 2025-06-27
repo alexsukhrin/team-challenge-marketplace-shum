@@ -122,6 +122,12 @@ jobs:
           cd ../../
           rm lib/datomic-pro-1.0.7364.zip
 
+      - name: Show maven-install log
+        run: cat lib/datomic-pro-1.0.7364/install.log || true
+
+      - name: List files in Datomic Pro dir
+        run: ls -l lib/datomic-pro-1.0.7364
+
       - name: List installed Datomic Pro in Maven repo
         run: ls -l ~/.m2/repository/com/datomic/datomic-pro/1.0.7364 || true
 
