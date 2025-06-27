@@ -21,10 +21,12 @@ RUN apt-get update && apt-get install -y unzip curl maven \
       -Dpackaging=jar
 
 RUN clojure -T:uberjar
+RUN clojure -T:uberjar-migrate
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=builder /app/target/app.jar ./app.jar
+COPY --from=builder /app/target/app-migrate.jar ./app-migrate.jar
 COPY --from=builder /app/config/ ./config
 
 EXPOSE 4000
