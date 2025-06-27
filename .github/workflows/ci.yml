@@ -122,6 +122,9 @@ jobs:
           cd ../../
           rm lib/datomic-pro-1.0.7364.zip
 
+      - name: List installed Datomic Pro in Maven repo
+        run: ls -l ~/.m2/repository/com/datomic/datomic-pro/1.0.7364 || true
+
       - name: Run test DB migrations
         run: clojure -X:migrate
 
