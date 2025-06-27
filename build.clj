@@ -58,12 +58,12 @@
   [{:keys [uber-file] :as opts}]
   (b/delete {:path "target"})
   (let [opts (merge (uber-opts opts)
-                    {:main 'migrate
+                    {:main 'team-challenge.migrate
                      :uber-file (or uber-file "target/app-migrate.jar")
-                     :ns-compile ['migrate]})]
+                     :ns-compile ['team-challenge.migrate]})]
     (println "\nCopying source...")
     (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
-    (println (str "\nCompiling migrate ..."))
+    (println (str "\nCompiling team-challenge.migrate ..."))
     (b/compile-clj opts)
     (println "\nBuilding migration JAR...")
     (b/uber opts))
