@@ -102,6 +102,18 @@ jobs:
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
 
+      - name: List config files
+        run: ls -l config
+
+      - name: Download Datomic Pro
+        run: |
+          mkdir -p lib
+          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
+          unzip lib/datomic-pro-1.0.7364.zip -d lib
+          mv lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364/* lib/datomic-pro-1.0.7364/
+          rmdir lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364
+          rm lib/datomic-pro-1.0.7364.zip
+
       - name: Run test DB migrations
         run: clojure -X:migrate
 
@@ -114,23 +126,12 @@ jobs:
       - name: Print APP_ENV
         run: echo $APP_ENV
 
-      - name: List config files
-        run: ls -l config
-
       - name: Run tests
         run: clojure -T:build test
 
-      - name: Download Datomic Pro
-        run: |
-          mkdir -p lib
-          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
-          unzip lib/datomic-pro-1.0.7364.zip -d lib
-          mv lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364/* lib/datomic-pro-1.0.7364/
-          rmdir lib/datomic-pro-1.0.7364/datomic-pro-1.0.7364
-          rm lib/datomic-pro-1.0.7364.zip
-
   build-app:
     needs: test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
