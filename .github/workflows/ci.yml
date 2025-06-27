@@ -218,7 +218,7 @@ jobs:
         run: |
           IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG="${{ github.sha }}"
-          docker build -t "${IMAGE_REPO_LOWER}:${IMAGE_TAG}" .
+          docker build --no-cache -t "${IMAGE_REPO_LOWER}:${IMAGE_TAG}" .
           docker push "${IMAGE_REPO_LOWER}:${IMAGE_TAG}"
 
       - name: Deploy to EC2
