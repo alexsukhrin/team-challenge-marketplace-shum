@@ -44,3 +44,6 @@
       (println "Found schema files:" schema-files)
       (apply-schemas conn schema-files)
       (println "✅ All schemas applied!"))))
+
+(defn -main [& args]
+  (apply main args))

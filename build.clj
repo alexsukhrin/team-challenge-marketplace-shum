@@ -59,7 +59,8 @@
   (b/delete {:path "target"})
   (let [opts (merge (uber-opts opts)
                     {:main 'migrate
-                     :uber-file (or uber-file "target/app-migrate.jar")})]
+                     :uber-file (or uber-file "target/app-migrate.jar")
+                     :ns-compile ['migrate]})]
     (println "\nCopying source...")
     (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
     (println (str "\nCompiling migrate ..."))
