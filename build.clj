@@ -6,20 +6,22 @@
 (def version "0.1.0-SNAPSHOT")
 (def main 'team-challenge.marketplace-shum)
 (def class-dir "target/classes")
+(def migrate-class-dir "target-migrate/classes")
 
 (defn test "Run all the tests." [opts]
-  (let [basis    (b/create-basis {:aliases [:test]})
-        cmds     (b/java-command
-                  {:basis     basis
-                   :main      'clojure.main
-                   :main-args ["-m" "cognitect.test-runner"]})
+  (let [basis (b/create-basis {:aliases [:test]})
+        cmds  (b/java-command {:basis basis
+                               :main 'clojure.main
+                               :main-args ["-m" "cognitect.test-runner"]})
         {:keys [exit]} (b/process cmds)]
-    (when-not (zero? exit) (throw (ex-info "Tests failed" {}))))
+    (when-not (zero? exit)
+      (throw (ex-info "Tests failed" {}))))
   opts)
 
 (defn- uber-opts [opts]
   (assoc opts
-         :lib lib :main main
+         :lib lib
+         :main main
          :uber-file (format "target/%s-%s.jar" lib version)
          :basis (b/create-basis {})
          :class-dir class-dir
@@ -56,13 +58,14 @@
 (defn uber-migrate
   "Build an uberjar for migrations."
   [{:keys [uber-file] :as opts}]
-  (b/delete {:path "target"})
+  (b/delete {:path "target-migrate"}) ;; 🧹 очищаємо лише свою папку
   (let [opts (merge (uber-opts opts)
                     {:main 'team-challenge.migrate
+                     :class-dir migrate-class-dir
                      :uber-file (or uber-file "target/app-migrate.jar")
                      :ns-compile ['team-challenge.migrate]})]
     (println "\nCopying source...")
-    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir class-dir})
+    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir migrate-class-dir})
     (println (str "\nCompiling team-challenge.migrate ..."))
     (b/compile-clj opts)
     (println "\nBuilding migration JAR...")
