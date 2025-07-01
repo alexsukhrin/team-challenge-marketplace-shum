@@ -102,6 +102,4 @@
 
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (confirm-email "57864cd3-1093-45e1-b5cc-c94577fdef0b")
-  
-  )
+  (confirm-email "57864cd3-1093-45e1-b5cc-c94577fdef0b"))

@@ -102,7 +102,5 @@
    (java.util.UUID/fromString "6a18114b-5164-4f39-a42c-5c1c50a57bf6")
    "token"
    (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
-  
-  
-  (find-user-by-confirmation-token "57864cd3-1093-45e1-b5cc-c94577fdef0b")
-  )
+
+  (find-user-by-confirmation-token "57864cd3-1093-45e1-b5cc-c94577fdef0b"))
