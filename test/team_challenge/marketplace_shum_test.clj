@@ -19,7 +19,7 @@
   (fn [f]
     (mount/start #'config/*config*)
     (with-redefs [team-challenge.service.email-service/send-confirmation-email mock-send-confirmation-email]
-      (mount/start #'db/conn #'web/http-server)
+      (mount/start #'db/datasource #'web/http-server)
       (try
         (f)
         (finally
@@ -46,7 +46,7 @@
         (is (= "User registered. Please check your email for a confirmation link." (:message body))))
 
       ;; Get confirmation token from DB (simulate email)
-      (let [user (user-repo/find-user-by-email email)
+      (let [user (user-repo/get-user-by-email email)
             token (:user/email-confirmation-token user)]
         (is (string? token))
         ;; Confirm email

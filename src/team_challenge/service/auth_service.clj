@@ -2,7 +2,6 @@
   (:require [buddy.hashers :as hashers]
             [buddy.sign.jwt :as jwt]
             [team-challenge.config :as config]
-            [team-challenge.db :as db]
             [clj-time.core :as t]
             [team-challenge.repository.auth-repository :as auth-repo]))
 
