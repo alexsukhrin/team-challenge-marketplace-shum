@@ -19,11 +19,9 @@
     (migratus/rollback migratus-config)
     (println "--- Відкат завершено ---")))
 
-
 (comment
   (def config (config/load-config "config/migratus.edn"))
   (migratus/init config)
   (migratus/migrate config)
   (migratus/create config "user_permissions")
-  (migrate)
-  )
+  (migrate))

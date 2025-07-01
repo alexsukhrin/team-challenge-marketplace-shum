@@ -4,7 +4,6 @@
             [honey.sql.helpers :as h :refer [insert-into columns values select from where delete-from]]
             [team-challenge.db :refer [datasource]]))
 
-
 (defn create-user! [{:keys [email password first_name last_name]}]
   (let [query (-> (insert-into :users)
                   (columns :email :password :first_name :last_name)
@@ -99,13 +98,10 @@
                   sql/format)]
     (jdbc/execute-one! datasource query)))
 
-
 (comment
   (require '[clj-time.core :as t])
-  
-  (set-confirmation-token! 
+
+  (set-confirmation-token!
    (java.util.UUID/fromString "6a18114b-5164-4f39-a42c-5c1c50a57bf6")
-   "token" 
-   (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
-  
-  )
+   "token"
+   (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))))

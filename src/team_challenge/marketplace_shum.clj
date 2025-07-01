@@ -48,6 +48,4 @@
   (mount/running-states)
 
   (start-system)
-  (stop-system)
-
-  )
+  (stop-system))

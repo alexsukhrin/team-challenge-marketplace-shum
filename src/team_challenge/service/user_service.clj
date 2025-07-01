@@ -101,5 +101,4 @@
 
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63")
-  )
+  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63"))
