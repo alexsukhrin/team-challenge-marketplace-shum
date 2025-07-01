@@ -153,3 +153,76 @@ docker exec ghcr.io/alexsukhrin/team-challenge-marketplace-shum:752d248c67d9fc14
     -p 4000:4000 \
     ghcr.io/<your-repo>:<sha>
   ```
+
+# Міграції бази даних (Migratus)
+
+Міграції зберігаються у папці `resources/migrations` у вигляді SQL-файлів:
+
+- `V1__init.sql`
+- `V2__add_users.sql`
+- ...
+
+Конфігурація міграцій: `resources/migratus.edn`
+
+## Запуск міграцій
+
+```bash
+clojure -X:migrate
+```
+
+або (якщо додати alias у deps.edn):
+
+```clojure
+:migrate {:extra-paths ["resources"]
+          :main-opts ["-m" "migratus.core" "migrate"]}
+```
+
+## Приклад міграції
+
+```sql
+-- resources/migrations/V1__init.sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now()
+);
+```
+
+# Процеси розробки, тестування та деплою
+
+## DEV (локальна розробка)
+
+- Запускай тільки Postgres через Docker Compose:
+  ```bash
+  docker-compose up
+  ```
+- Додаток і REPL запускай локально на своїй машині:
+  ```bash
+  clojure -M:dev
+  ```
+- Підключайся до Postgres на `localhost:5432` (user, db, pass — як у .env)
+- Live reload, інтеграція з редактором, REPL — все локально, максимально зручно.
+- Для зупинки Postgres:
+  ```bash
+  docker-compose down
+  ```
+
+## TEST (CI/CD)
+
+- У CI/CD (GitHub Actions) піднімається тільки Postgres через Docker.
+- Далі запускаються лінтери, міграції, тести локально на runner-і, підключаючись до Postgres у контейнері.
+- Додаток у контейнері для тестів не запускається.
+
+## PROD (деплой)
+
+- Деплой через Dockerfile (тільки app), підключення до зовнішнього RDS/Postgres.
+- На проді можна запускати app-контейнер так:
+  ```bash
+  docker run --env-file=.env -d --name app -p 3000:3000 <image>
+  ```
+- docker-compose для продакшену не потрібен (або тільки для локального запуску app, якщо треба).
+
+---
+
+**Питання, баги, пропозиції — у Issues або напряму до мейнтейнера!**

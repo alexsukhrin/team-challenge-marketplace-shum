@@ -3,7 +3,6 @@
             [buddy.sign.jwt :as jwt]
             [team-challenge.config :as config]
             [team-challenge.db :as db]
-            [datomic.api :as d]
             [clj-time.core :as t]
             [team-challenge.repository.auth-repository :as auth-repo]))
 
@@ -33,19 +32,19 @@
   [user]
   (let [jti (str (java.util.UUID/randomUUID))]
     (create-token {:type :access
-                   :user-id (:user/id user)
+                   :user-id (:id user)
                    :jti jti
                    :exp (t/plus (t/now) access-token-lifetime)})))
 
 (defn create-refresh-token
   "Creates a long-lived refresh token."
   [user]
-  (let [jti (java.util.UUID/randomUUID)
+  (let [jti (str (java.util.UUID/randomUUID))
         token (create-token {:type :refresh
-                             :user-id (:user/id user)
+                             :user-id (:id user)
                              :jti jti
                              :exp (t/plus (t/now) refresh-token-lifetime)})]
-    (d/transact db/conn [{:auth/refresh-token (str jti)}])
+    (auth-repo/add-refresh-token! (:id user) jti)
     token))
 
 ;;; Token Verification
@@ -81,7 +80,7 @@
 (defn revoke-refresh-token!
   "Adds a refresh token's JTI to the revoked list."
   [jti]
-  (auth-repo/add-refresh-token-to-revoked-list! jti))
+  (auth-repo/revoke-refresh-token! jti))
 
 (comment
 

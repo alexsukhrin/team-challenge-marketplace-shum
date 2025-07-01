@@ -15,22 +15,22 @@
 (defn register-user
   "Creates a new user and sends a confirmation email."
   [user-data]
-  (if (user-repo/find-user-by-email (:email user-data))
+  (if (user-repo/get-user-by-email (:email user-data))
     (throw (ex-info "Email already exists" {:type :email-conflict
                                             :email (:email user-data)}))
     (let [user (user-repo/create-user! user-data)
           confirmation-token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))
-          user-name (domain-user/full-name {:first-name (:user-profile/first-name user)
-                                            :last-name (:user-profile/last-name user)})]
-      (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at)
-      (email-service/send-confirmation-email (:user/email user) confirmation-token user-name)
+          user-name (domain-user/full-name {:first-name (:users/first_name user)
+                                            :last-name (:users/last_name user)})]
+      (user-repo/set-confirmation-token! (:users/id user) confirmation-token expires-at)
+      (email-service/send-confirmation-email (:users/email user) confirmation-token user-name)
       user)))
 
 (defn login
   "Verifies credentials and returns a token pair if they are valid."
   [email password]
-  (let [user (user-repo/find-user-by-email email)
+  (let [user (user-repo/get-user-by-email email)
         password-hash (cond
                         (and user (:user/email-confirmed? user)) (:auth/password-hash user)
                         :else dummy-hash)]
@@ -57,7 +57,7 @@
 (defn request-password-reset
   "Generates and saves a password reset token."
   [email]
-  (when-let [user (user-repo/find-user-by-email email)]
+  (when-let [user (user-repo/get-user-by-email email)]
     (let [token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/hours 1))))]
       (user-repo/set-password-reset-token! (:user/id user) token expires-at)
@@ -92,7 +92,7 @@
                             :email "alexandrvirtual@gmail.com"
                             :password "password1986"}))
 
-  (:user/id user)
+  (:users/id user)
 
   (def confirmation-token (str (java.util.UUID/randomUUID)))
   (def expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
@@ -101,4 +101,5 @@
 
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63"))
+  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63")
+  )

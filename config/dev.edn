@@ -1,7 +1,4 @@
-{:http-port 8080
- :datomic
- {:db-uri "datomic:mem://shum-dev"}
- :web-server 
+{:web-server 
  {:port #long #env PORT
   :host #env HOST}
  :jwt-secret #env JWT_SECRET
@@ -10,4 +7,10 @@
          :user   #env EMAIL_USER
          :pass   #env EMAIL_PASS
          :from   #env EMAIL_FROM
-         :tls    true}}
+         :tls    true}
+ :db {:spec {:dbtype "postgresql"
+              :host #env DB_HOST
+              :port #long #env DB_PORT
+              :dbname #env DB_NAME
+              :user #env DB_USER
+              :password #env DB_PASS}}}

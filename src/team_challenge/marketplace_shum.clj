@@ -2,20 +2,25 @@
   (:require [mount.core :as mount]
             [team-challenge.config :as config]
             [team-challenge.web :as web]
-            [team-challenge.db :as db])
+            [team-challenge.db :as db]
+            [team-challenge.migrate :as migrate])
   (:gen-class))
 
 (defn start-config []
   (mount/start #'config/*config*))
 
+(defn run-migrations []
+  (migrate/migrate))
+
 (defn start-db-conn []
-  (mount/start #'db/conn))
+  (mount/start #'db/datasource))
 
 (defn start-server []
   (mount/start #'web/http-server))
 
 (defn start-system []
   (start-config)
+  (run-migrations)
   (start-db-conn)
   (start-server))
 
@@ -23,7 +28,7 @@
   (mount/stop #'config/*config*))
 
 (defn stop-db-conn []
-  (mount/stop #'db/conn))
+  (mount/stop #'db/datasource))
 
 (defn stop-server []
   (mount/stop #'web/http-server))
@@ -44,16 +49,5 @@
 
   (start-system)
   (stop-system)
-
-  (require '[datomic.api :as d])
-
-
-  (def uri "datomic:sql://shum-prod?jdbc:postgresql://postgres-instance.cby2c0iga8z1.eu-central-1.rds.amazonaws.com:5432/marketplace?ssl=true&sslmode=require")
-
-  (def uri "datomic:sql://shum-prod?jdbc:postgresql://localhost:5432/marketplace")
-
-  (def uri "datomic:sql://shum-prod?jdbc:postgresql://localhost:5432/marketplace?user=marketplace_user&password=marketplace_password")
-
-  (d/create-database uri)
 
   )

@@ -1,33 +1,29 @@
 (ns team-challenge.migrate
-  (:require [datomic.api :as d]
-            [team-challenge.config :as config]
-            [clojure.java.io :as io]
-            [clojure.edn :as edn])
+  (:require [migratus.core :as migratus]
+            [team-challenge.config :as config])
   (:gen-class))
 
-(defn- apply-schemas
-  "Apply all schemas from resources/schema"
-  [conn]
-  (let [schema-dir (io/file (io/resource "schema"))
-        files (file-seq schema-dir)]
-    (doseq [file files]
-      (when (.isFile file)
-        (println "Applying schema from" (.getName file))
-        (let [schema (edn/read-string (slurp file))
-              _ (d/transact conn schema)]
-          (println "✅ Schema applied from" (.getName file)))))))
-
-(defn migrate 
-  "Start migration" 
+(defn migrate
+  "Запускає всі міграції через migratus."
   []
-  (println "--- Starting Datomic migration ---")
-  (let [uri (get-in config/*config* [:datomic :db-uri])]
-    (println "Datomic URI:" uri)
-    (println "Creating database (if it does not exist)...")
-    (d/create-database uri)
-    (println "Database created or already exists.")
-    (println "Connecting to database...")
-    (let [conn (d/connect uri)]
-      (println "Connection successful. Applying schemas...")
-      (apply-schemas conn)
-      (println "--- Datomic migration finished ---"))))
+  (let [migratus-config (config/load-config "config/migratus.edn")]
+    (println "--- Починаю міграцію бази даних ---")
+    (migratus/migrate migratus-config)
+    (println "--- Міграція завершена ---")))
+
+(defn rollback
+  "Відкат останньої міграції."
+  []
+  (let [migratus-config (config/load-config "config/migratus.edn")]
+    (println "--- Відкат міграції ---")
+    (migratus/rollback migratus-config)
+    (println "--- Відкат завершено ---")))
+
+
+(comment
+  (def config (config/load-config "config/migratus.edn"))
+  (migratus/init config)
+  (migratus/migrate config)
+  (migratus/create config "user_permissions")
+  (migrate)
+  )

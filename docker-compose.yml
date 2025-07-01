@@ -18,66 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  datomic-transactor:
-    build:
-      context: ./datomic-pro
-      dockerfile: Dockerfile
-    container_name: datomic-transactor
-    env_file: .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "4334:4334"
-      - "8998:8998"
-      - "8182:8182"
-    networks:
-      - shum-net
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "4334"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: app
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    ports:
-      - "3000:3000"
-    env_file: .env
-    networks:
-      - shum-net
-    restart: unless-stopped
-
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile.migrate
-    image: marketplace-shum_migrate
-    depends_on:
-      datomic-transactor:
-        condition: service_healthy
-    env_file: .env
-    networks:
-      - shum-net
-
-  activemq:
-    image: vromero/activemq-artemis
-    container_name: activemq
-    ports:
-      - "61616:61616"
-      - "8161:8161"
-    environment:
-      - ARTEMIS_USERNAME=admin
-      - ARTEMIS_PASSWORD=admin
-    networks:
-      - shum-net
-
 networks:
   shum-net:
     driver: bridge 
