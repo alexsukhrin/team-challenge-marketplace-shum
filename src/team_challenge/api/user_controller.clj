@@ -1,7 +1,8 @@
 (ns team-challenge.api.user-controller
   (:require [team-challenge.service.user-service :as user-service]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [team-challenge.repository.user-product-category-repository :as user-product-category-repo]))
 
 (defn spec-errors->messages [explain-data]
   (let [problems (:clojure.spec.alpha/problems explain-data)
@@ -138,6 +139,26 @@
   [request]
   (let [identity (:identity request)]
     {:status 200 :body {:user identity}}))
+
+(defn list-user-product-categories [{{:keys [user_id]} :path-params}]
+  {:status 200
+   :body (user-product-category-repo/get-all-for-user user_id)})
+
+(defn add-user-product-category [{{:keys [user_id]} :path-params :keys [body-params]}]
+  (let [category-id (:category_id body-params)]
+    (try
+      (let [result (user-product-category-repo/add! user_id category-id)]
+        {:status 201 :body result})
+      (catch Exception e
+        {:status 400 :body {:error (.getMessage e)}}))))
+
+(defn remove-user-product-category [{{:keys [user_id category_id]} :path-params}]
+  (try
+    (if-let [result (user-product-category-repo/remove! user_id category_id)]
+      {:status 204}
+      {:status 404 :body {:error "User category not found"}})
+    (catch Exception e
+      {:status 400 :body {:error (.getMessage e)}})))
 
 (comment
   (def user-data {:first_name "Alexandr",

@@ -19,5 +19,7 @@
   (println "--- Rollback completed ---"))
 
 (comment
+  (def config (config/load-config "config/migratus.edn"))
+  (migratus/create config "alter_products")
   (migrate)
   (rollback))

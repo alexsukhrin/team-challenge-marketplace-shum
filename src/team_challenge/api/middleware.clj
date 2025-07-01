@@ -62,7 +62,7 @@
   [handler]
   (cors/wrap-cors handler
                   :access-control-allow-origin [#".*"]
-                  :access-control-allow-methods [:get :put :post :delete]))
+                  :access-control-allow-methods [:get :put :post :delete :patch]))
 
 (defn wrap-keyword-query-params
   "Middleware to keywordize all query params."

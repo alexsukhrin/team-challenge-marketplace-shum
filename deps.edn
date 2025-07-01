@@ -41,7 +41,12 @@
         migratus/migratus {:mvn/version "1.5.3"}
 
         ;; Selmer
-        selmer/selmer {:mvn/version "1.12.62"}}
+        selmer/selmer {:mvn/version "1.12.62"}
+
+        ;; S3
+        com.cognitect.aws/api       {:mvn/version "0.8.741"}
+        com.cognitect.aws/endpoints {:mvn/version "871.2.31.64"}
+        com.cognitect.aws/s3        {:mvn/version "871.2.31.64"}}
 
  :aliases
  {:dev {:extra-paths ["config"]
