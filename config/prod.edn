@@ -20,6 +20,4 @@
          :user   #env EMAIL_USER
          :pass   #env EMAIL_PASS
          :from   #env EMAIL_FROM
-         :tls    true}
-
- :app {:base-url #env BASE_URL}}
+         :tls    true}}

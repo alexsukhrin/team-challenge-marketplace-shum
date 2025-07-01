@@ -43,3 +43,4 @@ target
 lib/
 target-migrate/
 META-INF/
+pgdata/

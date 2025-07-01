@@ -123,11 +123,10 @@ bin/run -m datomic.peer-server \
 
 ## Datomic run transactor
 
-docker run --env-file=.env -d --name datomic-transactor \
-            --network shum-net \
+docker run -d --name datomic-transactor \
             -e JAVA_OPTS="-server -Xms256m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=50" \
-            -p 8998:8998 -p 8182:8182 \
-            alexandrvirtual/datomic-transactor-prod:1.0.7364
+            -p 4334:4334 \
+            alexandrvirtual/datomic-transactor-dev:1.0.7364
 
 nohup bin/transactor -Xms64m -Xmx128m config/sql-transactor-template.properties > transactor.log 2>&1 &
 

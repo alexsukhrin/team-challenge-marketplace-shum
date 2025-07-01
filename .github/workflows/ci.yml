@@ -121,9 +121,6 @@ jobs:
             -Dversion=1.0.7364 \
             -Dpackaging=jar
 
-      - name: Run test DB migrations
-        run: clojure -X:migrate
-
       - name: Run clj-kondo lint
         run: clj-kondo --lint src test
 
@@ -248,5 +245,3 @@ jobs:
               --restart always \
               -p 8032:4000 \
               "$IMAGE_NAME"
-            echo "--- Running DB migrations in production ---"
-            docker exec "$CONTAINER_NAME" java -Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -jar app-migrate.jar || (echo '❌ Migration failed!' && docker logs "$CONTAINER_NAME" && exit 1)

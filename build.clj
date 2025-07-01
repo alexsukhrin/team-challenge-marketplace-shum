@@ -6,7 +6,6 @@
 (def version "0.1.0-SNAPSHOT")
 (def main 'team-challenge.marketplace-shum)
 (def class-dir "target/classes")
-(def migrate-class-dir "target-migrate/classes")
 
 (defn test "Run all the tests." [opts]
   (let [basis (b/create-basis {:aliases [:test]})
@@ -52,22 +51,5 @@
     (println (str "\nCompiling " main "..."))
     (b/compile-clj opts)
     (println "\nBuilding JAR...")
-    (b/uber opts))
-  opts)
-
-(defn uber-migrate
-  "Build an uberjar for migrations."
-  [{:keys [uber-file] :as opts}]
-  (b/delete {:path "target-migrate"}) ;; 🧹 очищаємо лише свою папку
-  (let [opts (merge (uber-opts opts)
-                    {:main 'team-challenge.migrate
-                     :class-dir migrate-class-dir
-                     :uber-file (or uber-file "target/app-migrate.jar")
-                     :ns-compile ['team-challenge.migrate]})]
-    (println "\nCopying source...")
-    (b/copy-dir {:src-dirs ["resources" "src" "config"] :target-dir migrate-class-dir})
-    (println (str "\nCompiling team-challenge.migrate ..."))
-    (b/compile-clj opts)
-    (println "\nBuilding migration JAR...")
     (b/uber opts))
   opts)

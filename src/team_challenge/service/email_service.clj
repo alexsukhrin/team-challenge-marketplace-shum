@@ -26,7 +26,7 @@
           params))
 
 (defn- create-confirmation-email [to token user-name]
-  (let [base-url (get-in config/*config* [:app :base-url])
+  (let [base-url (get-in config/*config* [:web-server :host])
         confirmation-link (str base-url "/api/v1/auth/confirm-email?token=" token)
         html-body (render-template @email-template {"user" user-name "link" confirmation-link})]
     {:from (get-in config/*config* [:email :from])
@@ -46,7 +46,7 @@
 (comment
   (def to "alexandrvirtual@gmail.com")
   (def token "161a3c65-5e9f-44c1-841f-63c237600bab")
-  (def user-name "Олександр")
+  (def user-name "Alexandr")
   (def email-config (get config/*config* :email))
   (def email-message (create-confirmation-email to token user-name))
   (postal/send-message email-config email-message))

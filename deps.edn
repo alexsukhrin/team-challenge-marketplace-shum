@@ -30,11 +30,9 @@
 
         ;; Time utils
         clj-time/clj-time {:mvn/version "0.15.2"}
-        clj-http/clj-http {:mvn/version "3.12.3"}
 
-        ;; Build tools
-        io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}
-        nrepl/nrepl {:mvn/version "1.1.2"}}
+        ;; Http
+        clj-http/clj-http {:mvn/version "3.12.3"}}
 
  :aliases
  {:dev {:extra-paths ["config"]
@@ -57,11 +55,4 @@
             :ns-default build}
 
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
-          :ns-default build}
-
-  :migrate {:main-opts ["-m" "team-challenge.marketplace-shum"]}
-
-  :uberjar-migrate {:replace-deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
-                   :exec-fn build/uber-migrate
-                   :exec-args {:uber-file "target/app-migrate.jar"}
-                   :ns-default build}}}
+          :ns-default build}}}

@@ -4,7 +4,7 @@
  :web-server 
  {:port #long #env PORT
   :host #env HOST}
- :jwt-secret "dev-secret"
+ :jwt-secret #env JWT_SECRET
  :email {:host   #env EMAIL_HOST
          :port   #long #env EMAIL_PORT
          :user   #env EMAIL_USER

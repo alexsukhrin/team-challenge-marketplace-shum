@@ -43,4 +43,17 @@
   (mount/running-states)
 
   (start-system)
-  (stop-system))
+  (stop-system)
+
+  (require '[datomic.api :as d])
+
+
+  (def uri "datomic:sql://shum-prod?jdbc:postgresql://postgres-instance.cby2c0iga8z1.eu-central-1.rds.amazonaws.com:5432/marketplace?ssl=true&sslmode=require")
+
+  (def uri "datomic:sql://shum-prod?jdbc:postgresql://localhost:5432/marketplace")
+
+  (def uri "datomic:sql://shum-prod?jdbc:postgresql://localhost:5432/marketplace?user=marketplace_user&password=marketplace_password")
+
+  (d/create-database uri)
+
+  )
