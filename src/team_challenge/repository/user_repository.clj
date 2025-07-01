@@ -48,7 +48,7 @@
     (jdbc/execute-one! datasource query)))
 
 (defn set-password-reset-token!
-  "Оновлює токен скидання пароля та час його дії для користувача."
+  "Updates the password reset token and its expiration time for the user."
   [user-id token expires-at]
   (let [ts (when expires-at (java.sql.Timestamp. (.getTime expires-at)))
         query (-> (h/update :users)
@@ -59,7 +59,7 @@
     (jdbc/execute-one! datasource query)))
 
 (defn find-user-by-reset-token
-  "Повертає користувача за токеном скидання пароля."
+  "Returns a user by password reset token."
   [token]
   (let [query (-> (h/select :*)
                   (h/from :users)
@@ -68,7 +68,7 @@
     (jdbc/execute-one! datasource query)))
 
 (defn update-password!
-  "Оновлює пароль користувача за user-id."
+  "Updates the user's password by user-id."
   [user-id new-password-hash]
   (let [query (-> (h/update :users)
                   (h/set {:password new-password-hash

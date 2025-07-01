@@ -7,6 +7,7 @@
             [team-challenge.web :as web]
             [team-challenge.db :as db]
             [team-challenge.config :as config]
+            [team-challenge.migrate :as migrate] 
             [team-challenge.service.email-service :as email-service]))
 
 (defn parse-body [resp]
@@ -18,6 +19,7 @@
 (use-fixtures :once
   (fn [f]
     (mount/start #'config/*config*)
+    (mount/start #'migrate/migrations)
     (with-redefs [team-challenge.service.email-service/send-confirmation-email mock-send-confirmation-email]
       (mount/start #'db/datasource #'web/http-server)
       (try

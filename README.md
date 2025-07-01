@@ -140,13 +140,13 @@ kill $(pgrep -f transactor)
 
 docker exec ghcr.io/alexsukhrin/team-challenge-marketplace-shum:752d248c67d9fc1428a8de53b403ef0a607572bb java -Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -jar app-migrate.jar || (echo '❌ Migration failed!' && docker logs "$CONTAINER_NAME" && exit 1)
 
-## 🐳 Docker-образ: app (міграції автоматично)
+## 🐳 Docker image: app (migrations automatic)
 
 ### Production API (app)
-- Збирається з `Dockerfile`.
-- Містить сервер API (uberjar, config, resources).
-- **Міграції Datomic виконуються автоматично при старті контейнера!**
-- Запуск:
+- Built from `Dockerfile`.
+- Contains API server (uberjar, config, resources).
+- **Datomic migrations are performed automatically when the container starts!**
+- Run:
   ```sh
   docker run --env-file=.env -d \
     --name marketplace-shum-app \
@@ -154,30 +154,30 @@ docker exec ghcr.io/alexsukhrin/team-challenge-marketplace-shum:752d248c67d9fc14
     ghcr.io/<your-repo>:<sha>
   ```
 
-# Міграції бази даних (Migratus)
+# Database migrations (Migratus)
 
-Міграції зберігаються у папці `resources/migrations` у вигляді SQL-файлів:
+Migrations are stored in the `resources/migrations` folder as SQL files:
 
 - `V1__init.sql`
 - `V2__add_users.sql`
 - ...
 
-Конфігурація міграцій: `resources/migratus.edn`
+Migrations configuration: `resources/migratus.edn`
 
-## Запуск міграцій
+## Running migrations
 
 ```bash
 clojure -X:migrate
 ```
 
-або (якщо додати alias у deps.edn):
+or (if you add an alias in deps.edn):
 
 ```clojure
 :migrate {:extra-paths ["resources"]
           :main-opts ["-m" "migratus.core" "migrate"]}
 ```
 
-## Приклад міграції
+## Migration example
 
 ```sql
 -- resources/migrations/V1__init.sql
@@ -189,40 +189,40 @@ CREATE TABLE users (
 );
 ```
 
-# Процеси розробки, тестування та деплою
+# Development, testing, and deployment processes
 
-## DEV (локальна розробка)
+## DEV (local development)
 
-- Запускай тільки Postgres через Docker Compose:
+- Run only Postgres via Docker Compose:
   ```bash
   docker-compose up
   ```
-- Додаток і REPL запускай локально на своїй машині:
+- Run the app and REPL locally on your machine:
   ```bash
   clojure -M:dev
   ```
-- Підключайся до Postgres на `localhost:5432` (user, db, pass — як у .env)
-- Live reload, інтеграція з редактором, REPL — все локально, максимально зручно.
-- Для зупинки Postgres:
+- Connect to Postgres at `localhost:5432` (user, db, pass — as in .env)
+- Live reload, integration with editor, REPL — all local, maximum convenience.
+- For stopping Postgres:
   ```bash
   docker-compose down
   ```
 
 ## TEST (CI/CD)
 
-- У CI/CD (GitHub Actions) піднімається тільки Postgres через Docker.
-- Далі запускаються лінтери, міграції, тести локально на runner-і, підключаючись до Postgres у контейнері.
-- Додаток у контейнері для тестів не запускається.
+- In CI/CD (GitHub Actions) only Postgres is brought up via Docker.
+- Then linters, migrations, tests are run locally on the runner, connecting to Postgres in the container.
+- The app in the container for tests is not run.
 
-## PROD (деплой)
+## PROD (deployment)
 
-- Деплой через Dockerfile (тільки app), підключення до зовнішнього RDS/Postgres.
-- На проді можна запускати app-контейнер так:
+- Deployment via Dockerfile (only app), connecting to external RDS/Postgres.
+- On prod you can run app container like this:
   ```bash
   docker run --env-file=.env -d --name app -p 3000:3000 <image>
   ```
-- docker-compose для продакшену не потрібен (або тільки для локального запуску app, якщо треба).
+- docker-compose for prod is not needed (or only for local run of app if needed).
 
 ---
 
-**Питання, баги, пропозиції — у Issues або напряму до мейнтейнера!**
+**Questions, bugs, suggestions — in Issues or directly to the maintainer!**

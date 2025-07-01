@@ -1,27 +1,23 @@
 (ns team-challenge.migrate
   (:require [migratus.core :as migratus]
-            [team-challenge.config :as config])
-  (:gen-class))
+            [team-challenge.config :as config]
+            [mount.core :refer [defstate]]))
 
-(defn migrate
-  "Запускає всі міграції через migratus."
-  []
-  (let [migratus-config (config/load-config "config/migratus.edn")]
-    (println "--- Починаю міграцію бази даних ---")
-    (migratus/migrate migratus-config)
-    (println "--- Міграція завершена ---")))
+(defstate migrations
+  :start (do
+           (println "--- Starting database migration ---")
+           (migratus/migrate (config/load-config "config/migratus.edn"))
+           (println "--- Migration completed ---"))
+  :stop nil)
 
-(defn rollback
-  "Відкат останньої міграції."
-  []
-  (let [migratus-config (config/load-config "config/migratus.edn")]
-    (println "--- Відкат міграції ---")
-    (migratus/rollback migratus-config)
-    (println "--- Відкат завершено ---")))
+(defn migrate []
+  (mount.core/start #'migrations))
+
+(defn rollback []
+  (println "--- Rolling back migration ---")
+  (migratus/rollback (config/load-config "config/migratus.edn"))
+  (println "--- Rollback completed ---"))
 
 (comment
-  (def config (config/load-config "config/migratus.edn"))
-  (migratus/init config)
-  (migratus/migrate config)
-  (migratus/create config "user_permissions")
-  (migrate))
+  (migrate)
+  (rollback))

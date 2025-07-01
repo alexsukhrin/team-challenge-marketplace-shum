@@ -10,7 +10,7 @@
   (mount/start #'config/*config*))
 
 (defn run-migrations []
-  (migrate/migrate))
+  (mount/start #'migrate/migrations))
 
 (defn start-db-conn []
   (mount/start #'db/datasource))
@@ -26,6 +26,9 @@
 
 (defn stop-config []
   (mount/stop #'config/*config*))
+
+(defn stop-migrations []
+  (mount/stop #'migrate/migrations))
 
 (defn stop-db-conn []
   (mount/stop #'db/datasource))

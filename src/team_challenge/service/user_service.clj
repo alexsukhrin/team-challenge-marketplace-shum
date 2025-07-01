@@ -51,7 +51,7 @@
   [refresh-token]
   (when-let [claims (auth-service/verify-refresh-token refresh-token)]
     (let [user-id (:user-id claims)
-          user {:user/id user-id}] ; Потрібен тільки ID для створення нового токена
+          user {:user/id user-id}] ; Only ID is needed to create a new token
       (auth-service/revoke-refresh-token! (:jti claims))
       (create-token-pair user))))
 

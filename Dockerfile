@@ -2,21 +2,21 @@
 FROM clojure:openjdk-17-tools-deps AS builder
 WORKDIR /app
 
-# Копіюємо проект
+# Copy project
 COPY deps.edn .
 COPY build.clj .
 COPY src ./src
 COPY resources ./resources
 COPY config ./config
 
-# Збірка основного jar
+# Build main jar
 RUN clojure -T:uberjar :uber-file '"target/app.jar"'
 
 # --- Stage 2: Minimal runtime image ---
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Копіюємо зібрані артефакти
+# Copy built artifacts
 COPY --from=builder /app/target/app.jar ./app.jar
 COPY --from=builder /app/config/ ./config
 
