@@ -7,7 +7,7 @@
             [team-challenge.web :as web]
             [team-challenge.db :as db]
             [team-challenge.config :as config]
-            [team-challenge.migrate :as migrate] 
+            [team-challenge.migrate :as migrate]
             [team-challenge.service.email-service :as email-service]))
 
 (defn parse-body [resp]
