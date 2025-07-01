@@ -1,11 +1,14 @@
 {:paths ["src" "resources" "."]
 
  :deps {org.clojure/clojure {:mvn/version "1.12.1"}
-        ;; Datomic
-        com.datomic/datomic-pro {:mvn/version "1.0.7364"}
-
         ;; Postgresql
         org.postgresql/postgresql {:mvn/version "42.7.3"}
+
+        ;; HoneySQL
+        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
+
+        ;; next.jdbc
+        com.github.seancorfield/next.jdbc {:mvn/version "1.3.1048"}
 
         ;; Auth
         buddy/buddy-hashers {:mvn/version "2.0.167"}
@@ -32,15 +35,19 @@
         clj-time/clj-time {:mvn/version "0.15.2"}
 
         ;; Http
-        clj-http/clj-http {:mvn/version "3.12.3"}}
+        clj-http/clj-http {:mvn/version "3.12.3"}
+
+        ;; Migratus
+        migratus/migratus {:mvn/version "1.5.3"}
+
+        ;; Selmer
+        selmer/selmer {:mvn/version "1.12.62"}}
 
  :aliases
  {:dev {:extra-paths ["config"]
-        :extra-deps {org.clojure/tools.namespace {:mvn/version "1.5.0"}
-                     nrepl/nrepl {:mvn/version "1.1.2"}
-                     cider/cider-nrepl {:mvn/version "0.49.1"}
-                     clj-http/clj-http {:mvn/version "3.12.3"}}
-        :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--port" "7888"]}
+        :extra-deps {nrepl/nrepl {:mvn/version "1.1.2"}
+                     cider/cider-nrepl {:mvn/version "0.49.1"}}
+        :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--host" "0.0.0.0" "--port" "7888"]}
 
   :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}

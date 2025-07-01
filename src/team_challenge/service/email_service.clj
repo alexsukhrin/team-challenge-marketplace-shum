@@ -2,10 +2,7 @@
   (:require [postal.core :as postal]
             [team-challenge.config :as config]
             [clojure.java.io :as io]
-            [clojure.string :as str]))
-
-(def ^:private email-template
-  (delay (slurp (io/resource "templates/email.html") :encoding "UTF-8")))
+            [selmer.parser :as selmer]))
 
 (defn- do-send-message
   "The actual function that sends the email. To be run by the agent."
@@ -19,16 +16,14 @@
 (def ^:private email-agent
   (agent nil :error-handler (fn [_ err] (println "Email agent error:" err))))
 
-(defn- render-template [template params]
-  (reduce (fn [t [k v]]
-            (str/replace t (re-pattern (str "\\{" k "\\}")) (str v)))
-          template
-          params))
+(defn- render-template [template-path params]
+  (selmer/render (slurp (io/resource template-path)) params))
 
 (defn- create-confirmation-email [to token user-name]
   (let [base-url (get-in config/*config* [:web-server :host])
-        confirmation-link (str base-url "/api/v1/auth/confirm-email?token=" token)
-        html-body (render-template @email-template {"user" user-name "link" confirmation-link})]
+        port (get-in config/*config* [:web-server :port])
+        confirmation-link (str base-url ":" port "/api/v1/auth/confirm-email?token=" token)
+        html-body (render-template "templates/email.html" {"user" user-name "link" confirmation-link})]
     {:from (get-in config/*config* [:email :from])
      :to to
      :subject "Please confirm your email address"

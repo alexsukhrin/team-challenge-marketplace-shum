@@ -1,24 +1,16 @@
-{:http-port 8080
- :datomic {:db-uri #join
-           ["datomic:sql://shum-test?jdbc:postgresql://"
-            #or [#env DB_HOST "postgres"]
-            ":5432/"
-            #or [#env POSTGRES_DB "marketplace"]
-            "?user="
-            #or [#env DB_USER "marketplace_user"]
-            "&password="
-            #or [#env DB_PASS "marketplace_password"]
-            "&ssl=false"]}
-
- :web-server 
- {:port #long #or [#env PORT 4000]
-  :host #or [#env HOST "localhost"]}
-
- :jwt-secret #or [#env JWT_SECRET "test"]
-
- :email {:host   #or [#env EMAIL_HOST "localhost"]
-         :port   #long #or [#env EMAIL_PORT 1025]
-         :user   #or [#env EMAIL_USER "test"]
-         :pass   #or [#env EMAIL_PASS "test"]
-         :from   #or [#env EMAIL_FROM "test@example.com"]
-         :tls    true}}
+{:web-server 
+ {:port #long #env PORT
+  :host #env HOST}
+ :jwt-secret #env JWT_SECRET
+ :email {:host   #env EMAIL_HOST
+         :port   #long #env EMAIL_PORT
+         :user   #env EMAIL_USER
+         :pass   #env EMAIL_PASS
+         :from   #env EMAIL_FROM
+         :tls    true}
+ :db {:spec {:dbtype "postgresql"
+              :host #env DB_HOST
+              :port #long #env DB_PORT
+              :dbname #env DB_NAME
+              :user #env DB_USER
+              :password #env DB_PASS}}}

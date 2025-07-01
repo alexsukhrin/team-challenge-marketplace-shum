@@ -15,27 +15,28 @@
 (defn register-user
   "Creates a new user and sends a confirmation email."
   [user-data]
-  (if (user-repo/find-user-by-email (:email user-data))
+  (if (user-repo/get-user-by-email (:email user-data))
     (throw (ex-info "Email already exists" {:type :email-conflict
                                             :email (:email user-data)}))
-    (let [user (user-repo/create-user! user-data)
+    (let [hashed-password (auth-service/hash-password (:password user-data))
+          user (user-repo/create-user! (assoc user-data :password hashed-password))
           confirmation-token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))
-          user-name (domain-user/full-name {:first-name (:user-profile/first-name user)
-                                            :last-name (:user-profile/last-name user)})]
-      (user-repo/set-confirmation-token! (:user/id user) confirmation-token expires-at)
-      (email-service/send-confirmation-email (:user/email user) confirmation-token user-name)
+          user-name (domain-user/full-name {:first-name (:users/first_name user)
+                                            :last-name (:users/last_name user)})]
+      (user-repo/set-confirmation-token! (:users/id user) confirmation-token expires-at)
+      (email-service/send-confirmation-email (:users/email user) confirmation-token user-name)
       user)))
 
 (defn login
   "Verifies credentials and returns a token pair if they are valid."
   [email password]
-  (let [user (user-repo/find-user-by-email email)
+  (let [user (user-repo/get-user-by-email email)
         password-hash (cond
-                        (and user (:user/email-confirmed? user)) (:auth/password-hash user)
+                        (and user (:users/email_confirmed user)) (:users/password user)
                         :else dummy-hash)]
     (when (and user
-               (:user/email-confirmed? user)
+               (:users/email_confirmed user)
                (auth-service/verify-password password password-hash))
       (create-token-pair user))))
 
@@ -50,14 +51,14 @@
   [refresh-token]
   (when-let [claims (auth-service/verify-refresh-token refresh-token)]
     (let [user-id (:user-id claims)
-          user {:user/id user-id}] ; Потрібен тільки ID для створення нового токена
+          user {:user/id user-id}] ; Only ID is needed to create a new token
       (auth-service/revoke-refresh-token! (:jti claims))
       (create-token-pair user))))
 
 (defn request-password-reset
   "Generates and saves a password reset token."
   [email]
-  (when-let [user (user-repo/find-user-by-email email)]
+  (when-let [user (user-repo/get-user-by-email email)]
     (let [token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/hours 1))))]
       (user-repo/set-password-reset-token! (:user/id user) token expires-at)
@@ -77,12 +78,12 @@
   "Confirms a user's email by token."
   [token]
   (when-let [user (user-repo/find-user-by-confirmation-token token)]
-    (let [expires-at (:user/email-confirmation-token-expires-at user)
+    (let [expires-at (:users/email_confirmation_token_expires_at user)
           expires-at-joda (if (instance? java.util.Date expires-at)
                             (org.joda.time.DateTime. ^java.util.Date expires-at)
                             expires-at)]
       (when (t/before? (t/now) expires-at-joda)
-        (user-repo/confirm-user-email! (:user/id user))
+        (user-repo/confirm-user-email! (:users/id user))
         true))))
 
 (comment
@@ -92,7 +93,7 @@
                             :email "alexandrvirtual@gmail.com"
                             :password "password1986"}))
 
-  (:user/id user)
+  (:users/id user)
 
   (def confirmation-token (str (java.util.UUID/randomUUID)))
   (def expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
@@ -101,4 +102,4 @@
 
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63"))
+  (confirm-email "57864cd3-1093-45e1-b5cc-c94577fdef0b"))

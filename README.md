@@ -140,16 +140,89 @@ kill $(pgrep -f transactor)
 
 docker exec ghcr.io/alexsukhrin/team-challenge-marketplace-shum:752d248c67d9fc1428a8de53b403ef0a607572bb java -Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m -jar app-migrate.jar || (echo '❌ Migration failed!' && docker logs "$CONTAINER_NAME" && exit 1)
 
-## 🐳 Docker-образ: app (міграції автоматично)
+## 🐳 Docker image: app (migrations automatic)
 
 ### Production API (app)
-- Збирається з `Dockerfile`.
-- Містить сервер API (uberjar, config, resources).
-- **Міграції Datomic виконуються автоматично при старті контейнера!**
-- Запуск:
+- Built from `Dockerfile`.
+- Contains API server (uberjar, config, resources).
+- **Datomic migrations are performed automatically when the container starts!**
+- Run:
   ```sh
   docker run --env-file=.env -d \
     --name marketplace-shum-app \
     -p 4000:4000 \
     ghcr.io/<your-repo>:<sha>
   ```
+
+# Database migrations (Migratus)
+
+Migrations are stored in the `resources/migrations` folder as SQL files:
+
+- `V1__init.sql`
+- `V2__add_users.sql`
+- ...
+
+Migrations configuration: `resources/migratus.edn`
+
+## Running migrations
+
+```bash
+clojure -X:migrate
+```
+
+or (if you add an alias in deps.edn):
+
+```clojure
+:migrate {:extra-paths ["resources"]
+          :main-opts ["-m" "migratus.core" "migrate"]}
+```
+
+## Migration example
+
+```sql
+-- resources/migrations/V1__init.sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now()
+);
+```
+
+# Development, testing, and deployment processes
+
+## DEV (local development)
+
+- Run only Postgres via Docker Compose:
+  ```bash
+  docker-compose up
+  ```
+- Run the app and REPL locally on your machine:
+  ```bash
+  clojure -M:dev
+  ```
+- Connect to Postgres at `localhost:5432` (user, db, pass — as in .env)
+- Live reload, integration with editor, REPL — all local, maximum convenience.
+- For stopping Postgres:
+  ```bash
+  docker-compose down
+  ```
+
+## TEST (CI/CD)
+
+- In CI/CD (GitHub Actions) only Postgres is brought up via Docker.
+- Then linters, migrations, tests are run locally on the runner, connecting to Postgres in the container.
+- The app in the container for tests is not run.
+
+## PROD (deployment)
+
+- Deployment via Dockerfile (only app), connecting to external RDS/Postgres.
+- On prod you can run app container like this:
+  ```bash
+  docker run --env-file=.env -d --name app -p 3000:3000 <image>
+  ```
+- docker-compose for prod is not needed (or only for local run of app if needed).
+
+---
+
+**Questions, bugs, suggestions — in Issues or directly to the maintainer!**

@@ -13,7 +13,6 @@ jobs:
     environment: test
     env:
       APP_ENV: test
-      ACTIVEMQ_BROKER_URL: ${{ vars.ACTIVEMQ_BROKER_URL }}
       PORT: ${{ vars.PORT }}
       HOST: ${{ vars.HOST }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
@@ -23,7 +22,9 @@ jobs:
       EMAIL_FROM: ${{ vars.EMAIL_FROM }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       DB_HOST: ${{ vars.DB_HOST }}
+      DB_PORT: ${{ vars.DB_PORT }}
       DB_USER: ${{ vars.DB_USER }}
+      DB_NAME: ${{ vars.DB_NAME }}
       DB_PASS: ${{ secrets.DB_PASS }}
       POSTGRES_DB: ${{ vars.POSTGRES_DB }}
       POSTGRES_USER: ${{ vars.POSTGRES_USER }}
@@ -55,30 +56,6 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install -y postgresql-client
 
-      - name: Start Datomic Transactor container for SQL scripts
-        run: |
-          docker create --name datomic-transactor-init alexandrvirtual/datomic-transactor-test:1.0.7364
-          docker cp datomic-transactor-init:/opt/datomic/datomic-pro-1.0.7364/bin/sql ./datomic-sql
-          docker rm datomic-transactor-init
-
-      - name: Init Datomic Postgres DB
-        run: |
-          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-db.sql
-          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-table.sql
-          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f datomic-sql/postgres-user.sql
-        env:
-          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
-
-      - name: Start Datomic Transactor
-        run: |
-          docker run -d --name datomic-transactor \
-            --network ci-network \
-            -e POSTGRES_DB=${{ env.POSTGRES_DB }} \
-            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
-            -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} \
-            -p 8998:8998 -p 8182:8182 \
-            alexandrvirtual/datomic-transactor-test:1.0.7364
-
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@13.4
         with:
@@ -96,30 +73,6 @@ jobs:
             .cpcache
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
-
-      - name: Cache Maven local repo
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
-          restore-keys: m2-
-
-      - name: Download Datomic Pro
-        run: |
-          mkdir -p lib
-          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
-          unzip lib/datomic-pro-1.0.7364.zip -d lib
-          rm lib/datomic-pro-1.0.7364.zip
-
-      - name: Manually install Datomic Pro jar
-        run: |
-          mvn install:install-file \
-            -Dfile=lib/datomic-pro-1.0.7364/peer-1.0.7364.jar \
-            -DpomFile=lib/datomic-pro-1.0.7364/pom.xml \
-            -DgroupId=com.datomic \
-            -DartifactId=datomic-pro \
-            -Dversion=1.0.7364 \
-            -Dpackaging=jar
 
       - name: Run clj-kondo lint
         run: clj-kondo --lint src test
@@ -143,7 +96,6 @@ jobs:
       packages: write
     env:
       APP_ENV: prod
-      ACTIVEMQ_BROKER_URL: ${{ vars.ACTIVEMQ_BROKER_URL }}
       PORT: ${{ vars.PORT }}
       HOST: ${{ vars.HOST }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
@@ -153,6 +105,8 @@ jobs:
       EMAIL_FROM: ${{ vars.EMAIL_FROM }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       DB_HOST: ${{ vars.DB_HOST }}
+      DB_NAME: ${{ vars.DB_NAME }}
+      DB_PORT: ${{ vars.DB_PORT }}
       DB_USER: ${{ vars.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
       POSTGRES_DB: ${{ vars.POSTGRES_DB }}
@@ -187,30 +141,6 @@ jobs:
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
 
-      - name: Cache Maven local repo
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: m2-${{ hashFiles('lib/datomic-pro-1.0.7364/peer-1.0.7364.jar') }}
-          restore-keys: m2-
-
-      - name: Download Datomic Pro
-        run: |
-          mkdir -p lib
-          curl -L "https://datomic-pro-downloads.s3.amazonaws.com/1.0.7364/datomic-pro-1.0.7364.zip" -o lib/datomic-pro-1.0.7364.zip
-          unzip lib/datomic-pro-1.0.7364.zip -d lib
-          rm lib/datomic-pro-1.0.7364.zip
-
-      - name: Manually install Datomic Pro jar
-        run: |
-          mvn install:install-file \
-            -Dfile=lib/datomic-pro-1.0.7364/peer-1.0.7364.jar \
-            -DpomFile=lib/datomic-pro-1.0.7364/pom.xml \
-            -DgroupId=com.datomic \
-            -DartifactId=datomic-pro \
-            -Dversion=1.0.7364 \
-            -Dpackaging=jar
-
       - name: Build and push Docker image
         run: |
           IMAGE_REPO_LOWER=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
@@ -240,8 +170,7 @@ jobs:
             echo "--- Deploying new application container ---"
             docker run --env-file=.env -d \
               --network shum-net \
-              --name "$CONTAINER_NAME" -m 300m \
-              -e 'JAVA_OPTS=-Xmx200m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Ddatomic.objectCacheMax=32m -Ddatomic.memoryIndexMax=64m' \
+              --name "$CONTAINER_NAME" \
               --restart always \
               -p 8032:4000 \
               "$IMAGE_NAME"

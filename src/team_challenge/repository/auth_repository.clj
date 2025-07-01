@@ -1,28 +1,49 @@
 (ns team-challenge.repository.auth-repository
-  (:require [datomic.api :as d]
-            [team-challenge.db :as db]))
+  (:require [next.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [honey.sql.helpers :refer [select from where insert-into columns values delete-from]]
+            [team-challenge.db :refer [datasource]]))
 
 (defn is-token-blacklisted?
   "Checks if the given JTI is blacklisted."
   [jti]
-  (some? (d/q '[:find ?e :in $ ?jti :where [?e :auth/blacklisted-token ?jti]]
-              (d/db db/conn) (str jti))))
+  (let [query (-> (select :token)
+                  (from :blacklisted_tokens)
+                  (where [:= :token jti])
+                  sql/format)]
+    (some? (jdbc/execute-one! datasource query))))
 
 (defn is-refresh-token-revoked?
   "Checks if the given JTI is in the revoked refresh token list."
   [jti]
-  (not (some? (d/q '[:find ?e :in $ ?jti :where [?e :auth/refresh-token ?jti]]
-                   (d/db db/conn) (str jti)))))
+  (let [query (-> (select :token)
+                  (from :refresh_tokens)
+                  (where [:= :token jti])
+                  sql/format)]
+    (not (some? (jdbc/execute-one! datasource query)))))
 
 (defn add-token-to-blacklist!
   "Adds the given JTI to the blacklist."
   [jti]
-  (d/transact db/conn [{:auth/blacklisted-token (str jti)}]))
+  (let [query (-> (insert-into :blacklisted_tokens)
+                  (columns :token)
+                  (values [[jti]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
-(defn add-refresh-token-to-revoked-list!
+(defn add-refresh-token!
+  "Adds a refresh token for the user."
+  [user-id jti]
+  (let [query (-> (insert-into :refresh_tokens)
+                  (columns :token :user_id)
+                  (values [[jti user-id]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
+
+(defn revoke-refresh-token!
   "Removes the given JTI from the valid refresh token list (revokes it)."
   [jti]
-  (let [dbval (d/db db/conn)
-        eid (ffirst (d/q '[:find ?e :in $ ?jti :where [?e :auth/refresh-token ?jti]] dbval (str jti)))]
-    (when eid
-      (d/transact db/conn [[:db.fn/retractEntity eid]]))))
+  (let [query (-> (delete-from :refresh_tokens)
+                  (where [:= :token jti])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))

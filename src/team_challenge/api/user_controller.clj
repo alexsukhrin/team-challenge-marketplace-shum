@@ -14,11 +14,11 @@
                           set)]
     (vec
      (concat
-      ;; Для відсутніх ключів
+      ;; For missing keys
       (for [k missing-keys]
         {:field k
          :error "field is required"})
-      ;; Для інших проблем
+      ;; For other problems
       (for [{:keys [path pred val]} problems
             :let [field (if-let [f (first path)] (name f) "request")]
             :when (not (and (coll? pred) (some #{'clojure.core/contains?} pred)))]

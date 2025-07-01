@@ -7,6 +7,7 @@
             [team-challenge.web :as web]
             [team-challenge.db :as db]
             [team-challenge.config :as config]
+            [team-challenge.migrate :as migrate]
             [team-challenge.service.email-service :as email-service]))
 
 (defn parse-body [resp]
@@ -18,8 +19,9 @@
 (use-fixtures :once
   (fn [f]
     (mount/start #'config/*config*)
+    (mount/start #'migrate/migrations)
     (with-redefs [team-challenge.service.email-service/send-confirmation-email mock-send-confirmation-email]
-      (mount/start #'db/conn #'web/http-server)
+      (mount/start #'db/datasource #'web/http-server)
       (try
         (f)
         (finally
@@ -46,8 +48,8 @@
         (is (= "User registered. Please check your email for a confirmation link." (:message body))))
 
       ;; Get confirmation token from DB (simulate email)
-      (let [user (user-repo/find-user-by-email email)
-            token (:user/email-confirmation-token user)]
+      (let [user (user-repo/get-user-by-email email)
+            token (:users/email_confirmation_token user)]
         (is (string? token))
         ;; Confirm email
         (let [resp (http/get (str api-auth-url "/confirm-email")
