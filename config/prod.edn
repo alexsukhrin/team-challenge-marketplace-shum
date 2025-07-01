@@ -1,6 +1,5 @@
-{:http-port 8080
- :web-server 
- {:port #long #env PORT 
+{:web-server 
+ {:port #long #env PORT
   :host #env HOST}
  :jwt-secret #env JWT_SECRET
  :email {:host   #env EMAIL_HOST
@@ -11,7 +10,7 @@
          :tls    true}
  :db {:spec {:dbtype "postgresql"
               :host #env DB_HOST
-              :port #or [#env DB_PORT 5432]
+              :port #long #env DB_PORT
               :dbname #env DB_NAME
               :user #env DB_USER
               :password #env DB_PASS}}}

@@ -95,7 +95,6 @@ jobs:
       packages: write
     env:
       APP_ENV: prod
-      ACTIVEMQ_BROKER_URL: ${{ vars.ACTIVEMQ_BROKER_URL }}
       PORT: ${{ vars.PORT }}
       HOST: ${{ vars.HOST }}
       EMAIL_PORT: ${{ vars.EMAIL_PORT }}
@@ -105,6 +104,7 @@ jobs:
       EMAIL_FROM: ${{ vars.EMAIL_FROM }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       DB_HOST: ${{ vars.DB_HOST }}
+      DB_PORT: ${{ vars.DB_PORT }}
       DB_USER: ${{ vars.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
       POSTGRES_DB: ${{ vars.POSTGRES_DB }}
