@@ -78,22 +78,19 @@
                   sql/format)]
     (jdbc/execute-one! datasource query)))
 
-(defn find-user-by-confirmation-token
-  "Повертає користувача за токеном підтвердження email."
-  [token]
+(defn find-user-by-confirmation-token [token]
   (let [query (-> (h/select :*)
                   (h/from :users)
                   (h/where [:= :email_confirmation_token token])
                   sql/format)]
     (jdbc/execute-one! datasource query)))
 
-(defn confirm-user-email!
-  "Підтверджує email користувача: встановлює email_confirmed=TRUE, очищає токен та його термін дії."
-  [user-id]
+(defn confirm-user-email! [user-id]
   (let [query (-> (h/update :users)
                   (h/set {:email_confirmed true
                           :email_confirmation_token nil
-                          :email_confirmation_token_expires_at nil})
+                          :email_confirmation_token_expires_at nil
+                          :updated_at (java.time.LocalDateTime/now)})
                   (h/where [:= :id user-id])
                   sql/format)]
     (jdbc/execute-one! datasource query)))
@@ -104,4 +101,8 @@
   (set-confirmation-token!
    (java.util.UUID/fromString "6a18114b-5164-4f39-a42c-5c1c50a57bf6")
    "token"
-   (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))))
+   (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1)))))
+  
+  
+  (find-user-by-confirmation-token "57864cd3-1093-45e1-b5cc-c94577fdef0b")
+  )

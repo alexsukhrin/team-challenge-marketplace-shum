@@ -18,7 +18,8 @@
   (if (user-repo/get-user-by-email (:email user-data))
     (throw (ex-info "Email already exists" {:type :email-conflict
                                             :email (:email user-data)}))
-    (let [user (user-repo/create-user! user-data)
+    (let [hashed-password (auth-service/hash-password (:password user-data))
+          user (user-repo/create-user! (assoc user-data :password hashed-password))
           confirmation-token (str (java.util.UUID/randomUUID))
           expires-at (java.util.Date. (.getMillis (t/plus (t/now) (t/days 1))))
           user-name (domain-user/full-name {:first-name (:users/first_name user)
@@ -32,10 +33,10 @@
   [email password]
   (let [user (user-repo/get-user-by-email email)
         password-hash (cond
-                        (and user (:user/email-confirmed? user)) (:auth/password-hash user)
+                        (and user (:users/email_confirmed user)) (:users/password user)
                         :else dummy-hash)]
     (when (and user
-               (:user/email-confirmed? user)
+               (:users/email_confirmed user)
                (auth-service/verify-password password password-hash))
       (create-token-pair user))))
 
@@ -77,12 +78,12 @@
   "Confirms a user's email by token."
   [token]
   (when-let [user (user-repo/find-user-by-confirmation-token token)]
-    (let [expires-at (:user/email-confirmation-token-expires-at user)
+    (let [expires-at (:users/email_confirmation_token_expires_at user)
           expires-at-joda (if (instance? java.util.Date expires-at)
                             (org.joda.time.DateTime. ^java.util.Date expires-at)
                             expires-at)]
       (when (t/before? (t/now) expires-at-joda)
-        (user-repo/confirm-user-email! (:user/id user))
+        (user-repo/confirm-user-email! (:users/id user))
         true))))
 
 (comment
@@ -101,4 +102,6 @@
 
   (login "alexandrvirtual@gmail.com" "password1986")
 
-  (user-repo/find-user-by-confirmation-token "c9081132-9937-4f99-ba2b-2afa8242af63"))
+  (confirm-email "57864cd3-1093-45e1-b5cc-c94577fdef0b")
+  
+  )

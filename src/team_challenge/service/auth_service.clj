@@ -43,7 +43,7 @@
                              :user-id (:id user)
                              :jti jti
                              :exp (t/plus (t/now) refresh-token-lifetime)})]
-    (auth-repo/add-refresh-token! (:id user) jti)
+    (auth-repo/add-refresh-token! (:users/id user) jti)
     token))
 
 ;;; Token Verification

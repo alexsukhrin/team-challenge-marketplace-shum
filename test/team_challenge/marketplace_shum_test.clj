@@ -47,7 +47,7 @@
 
       ;; Get confirmation token from DB (simulate email)
       (let [user (user-repo/get-user-by-email email)
-            token (:user/email-confirmation-token user)]
+            token (:users/email_confirmation_token user)]
         (is (string? token))
         ;; Confirm email
         (let [resp (http/get (str api-auth-url "/confirm-email")
