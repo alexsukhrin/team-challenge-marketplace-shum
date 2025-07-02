@@ -7,14 +7,16 @@
    [team-challenge.api.user-controller :as user-controller]
    [team-challenge.api.product-controller :as product-controller]
    [reitit.coercion.spec :as spec-coercion]
-   [reitit.ring.middleware.parameters :refer [parameters-middleware]]))
+   [reitit.ring.middleware.parameters :refer [parameters-middleware]]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
 
 (def common-middleware
   [middleware/wrap-cors
    middleware/wrap-exceptions])
 
 (def api-middleware
-  [middleware/wrap-json-response
+  [wrap-multipart-params
+   middleware/wrap-json-response
    middleware/wrap-json-body
    parameters-middleware
    middleware/wrap-keyword-query-params])
@@ -33,7 +35,8 @@
                                                      :in :header
                                                      :name "authorization"}}
                      :tags [{:name "auth" :description "registration and authorization routes api"}
-                            {:name "users", :description "create users routes api"}]}
+                            {:name "users", :description "create users routes api"}
+                            {:name "products", :description "create products routes api"}]}
            :handler (swagger/create-swagger-handler)}}]
 
    ["/docs/*"
@@ -109,6 +112,9 @@
 
 (def product-reference-routes
   [;; Product Categories
+   ""
+   {:tags #{"products"}}
+
    ["/product-categories"
     {:get #'product-controller/list-product-categories-handler
      :post #'product-controller/create-product-category-handler}]

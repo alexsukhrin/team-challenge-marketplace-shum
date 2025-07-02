@@ -7,12 +7,12 @@
 (defn- config []
   (aero/read-config (io/resource (str "config/" (or (System/getenv "APP_ENV") "dev") ".edn"))))
 
-(defstate s3-client
+(defstate s3
   :start (aws/client {:api :s3 :region (get-in (config) [:s3 :region])}))
 
 (defn upload-file!
   [bucket key file-bytes content-type]
-  (aws/invoke s3-client
+  (aws/invoke s3
               {:op :PutObject
                :request {:Bucket bucket
                          :Key key
@@ -21,7 +21,7 @@
 
 (defn delete-file!
   [bucket key]
-  (aws/invoke s3-client
+  (aws/invoke s3
               {:op :DeleteObject
                :request {:Bucket bucket
                          :Key key}}))

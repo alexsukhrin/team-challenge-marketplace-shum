@@ -13,9 +13,10 @@
    [team-challenge.repository.product-photo-repository :as product-photo-repo]
    [team-challenge.repository.product-characteristic-repository :as product-characteristic-repo]
    [team-challenge.repository.product-materials-repository :as product-materials-repo]
-   [team-challenge.service.s3-service :as s3-service]
+   [team-challenge.service.s3-service :as s3]
    [aero.core :as aero]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [team-challenge.config :as config]))
 
 (s/def ::name string?)
 (s/def ::description string?)
@@ -30,8 +31,20 @@
     {:status 200 :body {:category cat}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-category-handler [{:keys [body]}]
-  {:status 201 :body {:category (category-repo/create! body)}})
+(defn create-product-category-handler [{:keys [multipart-params]}]
+  (let [file (get multipart-params "photo")
+        name (get multipart-params "name")
+        filename (str (System/currentTimeMillis) "-" (:filename file))
+        bucket (get-in config/*config* [:s3 :bucket])
+        file-bytes (slurp (:tempfile file) :encoding "ISO-8859-1")
+        content-type (:content-type file)]
+    (try
+      (s3/upload-file! bucket filename (.getBytes file-bytes) content-type)
+      (let [category {:name name :photo filename}
+            created (category-repo/create! category)]
+        {:status 201 :body {:category created}})
+      (catch Exception e
+        {:status 400 :body {:error (.getMessage e)}}))))
 
 (defn update-product-category-handler [{:keys [path-params body]}]
   (if-let [cat (category-repo/update! (parse-long (:id path-params)) body)]
@@ -52,11 +65,11 @@
     {:status 200 :body {:color color}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-color-handler [{:keys [body-params]}]
-  {:status 201 :body {:color (color-repo/create! body-params)}})
+(defn create-product-color-handler [{:keys [body]}]
+  {:status 201 :body {:color (color-repo/create! body)}})
 
-(defn update-product-color-handler [{:keys [path-params body-params]}]
-  (if-let [color (color-repo/update! (parse-long (:id path-params)) body-params)]
+(defn update-product-color-handler [{:keys [path-params body]}]
+  (if-let [color (color-repo/update! (parse-long (:id path-params)) body)]
     {:status 200 :body {:color color}}
     {:status 404 :body {:error "Not found"}}))
 
@@ -74,11 +87,11 @@
     {:status 200 :body {:size size}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-size-handler [{:keys [body-params]}]
-  {:status 201 :body {:size (size-repo/create! body-params)}})
+(defn create-product-size-handler [{:keys [body]}]
+  {:status 201 :body {:size (size-repo/create! body)}})
 
-(defn update-product-size-handler [{:keys [path-params body-params]}]
-  (if-let [size (size-repo/update! (parse-long (:id path-params)) body-params)]
+(defn update-product-size-handler [{:keys [path-params body]}]
+  (if-let [size (size-repo/update! (parse-long (:id path-params)) body)]
     {:status 200 :body {:size size}}
     {:status 404 :body {:error "Not found"}}))
 
@@ -96,11 +109,11 @@
     {:status 200 :body {:material material}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-material-handler [{:keys [body-params]}]
-  {:status 201 :body {:material (material-repo/create! body-params)}})
+(defn create-product-material-handler [{:keys [body]}]
+  {:status 201 :body {:material (material-repo/create! body)}})
 
-(defn update-product-material-handler [{:keys [path-params body-params]}]
-  (if-let [material (material-repo/update! (parse-long (:id path-params)) body-params)]
+(defn update-product-material-handler [{:keys [path-params body]}]
+  (if-let [material (material-repo/update! (parse-long (:id path-params)) body)]
     {:status 200 :body {:material material}}
     {:status 404 :body {:error "Not found"}}))
 
@@ -118,11 +131,11 @@
     {:status 200 :body {:gender gender}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-gender-handler [{:keys [body-params]}]
-  {:status 201 :body {:gender (gender-repo/create! body-params)}})
+(defn create-product-gender-handler [{:keys [body]}]
+  {:status 201 :body {:gender (gender-repo/create! body)}})
 
-(defn update-product-gender-handler [{:keys [path-params body-params]}]
-  (if-let [gender (gender-repo/update! (parse-long (:id path-params)) body-params)]
+(defn update-product-gender-handler [{:keys [path-params body]}]
+  (if-let [gender (gender-repo/update! (parse-long (:id path-params)) body)]
     {:status 200 :body {:gender gender}}
     {:status 404 :body {:error "Not found"}}))
 
@@ -141,16 +154,16 @@
     {:status 200 :body size}
     {:status 404 :body {:error "Product clothing size not found"}}))
 
-(defn create-product-clothing-size [{:keys [body-params]}]
+(defn create-product-clothing-size [{:keys [body]}]
   (try
-    (let [created (product-clothing-size-repo/create! body-params)]
+    (let [created (product-clothing-size-repo/create! body)]
       {:status 201 :body created})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn update-product-clothing-size [{{:keys [id]} :path-params :keys [body-params]}]
+(defn update-product-clothing-size [{{:keys [id]} :path-params :keys [body]}]
   (try
-    (if-let [updated (product-clothing-size-repo/update! (parse-long id) body-params)]
+    (if-let [updated (product-clothing-size-repo/update! (parse-long id) body)]
       {:status 200 :body updated}
       {:status 404 :body {:error "Product clothing size not found"}})
     (catch Exception e
@@ -164,61 +177,13 @@
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-;; Payment Options
-(defn list-payment-options-handler [_]
-  {:status 200 :body {:payment_options []}})
-(defn get-payment-option-handler [_]
-  {:status 200 :body {:payment_option {}}})
-(defn create-payment-option-handler [_]
-  {:status 201 :body {:payment_option {}}})
-(defn update-payment-option-handler [_]
-  {:status 200 :body {:payment_option {}}})
-(defn delete-payment-option-handler [_]
-  {:status 204})
-
-;; Delivery Options
-(defn list-delivery-options-handler [_]
-  {:status 200 :body {:delivery_options []}})
-(defn get-delivery-option-handler [_]
-  {:status 200 :body {:delivery_option {}}})
-(defn create-delivery-option-handler [_]
-  {:status 201 :body {:delivery_option {}}})
-(defn update-delivery-option-handler [_]
-  {:status 200 :body {:delivery_option {}}})
-(defn delete-delivery-option-handler [_]
-  {:status 204})
-
-;; Product Photos
-(defn list-product-photos-handler [_]
-  {:status 200 :body {:photos []}})
-(defn create-product-photo-handler [_]
-  {:status 201 :body {:photo {}}})
-(defn delete-product-photo-handler [_]
-  {:status 204})
-
-;; Product <-> Colors
-(defn list-product-colors-for-product-handler [_]
-  {:status 200 :body {:colors []}})
-(defn add-product-color-handler [_]
-  {:status 201 :body {:result "added"}})
-(defn remove-product-color-handler [_]
-  {:status 204})
-
-;; Product <-> Sizes
-(defn list-product-sizes-for-product-handler [_]
-  {:status 200 :body {:sizes []}})
-(defn add-product-size-handler [_]
-  {:status 201 :body {:result "added"}})
-(defn remove-product-size-handler [_]
-  {:status 204})
-
 ;; Product <-> Materials
 (defn list-product-materials-for-product [{{:keys [product_id]} :path-params}]
   {:status 200
    :body (product-materials-repo/get-all-for-product (parse-long product_id))})
 
-(defn add-product-material-for-product [{{:keys [product_id]} :path-params :keys [body-params]}]
-  (let [{:keys [characteristic_id value]} body-params]
+(defn add-product-material-for-product [{{:keys [product_id]} :path-params :keys [body]}]
+  (let [{:keys [characteristic_id value]} body]
     (try
       (let [result (product-materials-repo/add! (parse-long product_id) characteristic_id value)]
         {:status 201 :body result})
@@ -232,30 +197,6 @@
       {:status 404 :body {:error "Product material not found"}})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
-
-;; Product <-> Genders
-(defn list-product-genders-for-product-handler [_]
-  {:status 200 :body {:genders []}})
-(defn add-product-gender-handler [_]
-  {:status 201 :body {:result "added"}})
-(defn remove-product-gender-handler [_]
-  {:status 204})
-
-;; Product <-> Clothing Sizes
-(defn list-product-clothing-sizes-for-product-handler [_]
-  {:status 200 :body {:clothing_sizes []}})
-(defn add-product-clothing-size-handler [_]
-  {:status 201 :body {:result "added"}})
-(defn remove-product-clothing-size-handler [_]
-  {:status 204})
-
-;; Product <-> Categories
-(defn list-product-categories-for-product-handler [_]
-  {:status 200 :body {:categories []}})
-(defn add-product-category-handler [_]
-  {:status 201 :body {:result "added"}})
-(defn remove-product-category-handler [_]
-  {:status 204})
 
 ;; Payment Options Handlers
 (defn get-all-payment-options [_]
@@ -335,16 +276,16 @@
     {:status 200 :body product}
     {:status 404 :body {:error "Product not found"}}))
 
-(defn create-product [{:keys [body-params]}]
+(defn create-product [{:keys [body]}]
   (try
-    (let [created (product-repo/create! body-params)]
+    (let [created (product-repo/create! body)]
       {:status 201 :body created})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn update-product [{{:keys [id]} :path-params :keys [body-params]}]
+(defn update-product [{{:keys [id]} :path-params :keys [body]}]
   (try
-    (if-let [updated (product-repo/update! (parse-long id) body-params)]
+    (if-let [updated (product-repo/update! (parse-long id) body)]
       {:status 200 :body updated}
       {:status 404 :body {:error "Product not found"}})
     (catch Exception e
@@ -358,22 +299,19 @@
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn- s3-config []
-  (aero/read-config (io/resource (str "config/" (or (System/getenv "APP_ENV") "dev") ".edn"))))
-
 (defn list-product-photos [{{:keys [product_id]} :path-params}]
   {:status 200
    :body (product-photo-repo/get-all-for-product (parse-long product_id))})
 
 (defn create-product-photo [{{:keys [product_id]} :path-params :keys [multipart-params]}]
   (let [file (get multipart-params "file")
-        bucket (get-in (s3-config) [:s3 :bucket])
+        bucket (get-in config/*config* [:s3 :bucket])
         key (str "products/" product_id "/" (System/currentTimeMillis) "-" (:filename file))
         file-bytes (slurp (:tempfile file) :encoding "ISO-8859-1")
         content-type (:content-type file)]
     (try
-      (s3-service/upload-file! bucket key (.getBytes file-bytes) content-type)
-      (let [url (s3-service/generate-url bucket key)
+      (s3/upload-file! bucket key (.getBytes file-bytes) content-type)
+      (let [url (s3/generate-url bucket key)
             photo (product-photo-repo/create! {:product_id (parse-long product_id)
                                                :url url
                                                :s3_key key})]
@@ -384,10 +322,10 @@
 (defn delete-product-photo [{{:keys [product_id photo_id]} :path-params}]
   (let [photo (product-photo-repo/delete! (parse-long photo_id))]
     (if photo
-      (let [bucket (get-in (s3-config) [:s3 :bucket])
+      (let [bucket (get-in config/*config* [:s3 :bucket])
             key (:s3_key photo)]
         (try
-          (s3-service/delete-file! bucket key)
+          (s3/delete-file! bucket key)
           {:status 204}
           (catch Exception e
             {:status 400 :body {:error (.getMessage e)}})))
@@ -403,16 +341,16 @@
     {:status 200 :body characteristic}
     {:status 404 :body {:error "Product characteristic not found"}}))
 
-(defn create-product-characteristic [{:keys [body-params]}]
+(defn create-product-characteristic [{:keys [body]}]
   (try
-    (let [created (product-characteristic-repo/create! body-params)]
+    (let [created (product-characteristic-repo/create! body)]
       {:status 201 :body created})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn update-product-characteristic [{{:keys [id]} :path-params :keys [body-params]}]
+(defn update-product-characteristic [{{:keys [id]} :path-params :keys [body]}]
   (try
-    (if-let [updated (product-characteristic-repo/update! (parse-long id) body-params)]
+    (if-let [updated (product-characteristic-repo/update! (parse-long id) body)]
       {:status 200 :body updated}
       {:status 404 :body {:error "Product characteristic not found"}})
     (catch Exception e
