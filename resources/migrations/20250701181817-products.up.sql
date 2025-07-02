@@ -4,6 +4,5 @@ CREATE TABLE products (
     description TEXT,
     price NUMERIC(12,2),
     user_id UUID NOT NULL REFERENCES users(id),
-    quantity INT NOT NULL DEFAULT 1,
-    FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL
+    quantity INT NOT NULL DEFAULT 1
 );

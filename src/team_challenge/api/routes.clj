@@ -11,8 +11,10 @@
 
 (def common-middleware
   [middleware/wrap-cors
-   middleware/wrap-exceptions
-   middleware/wrap-json-response
+   middleware/wrap-exceptions])
+
+(def api-middleware
+  [middleware/wrap-json-response
    middleware/wrap-json-body
    parameters-middleware
    middleware/wrap-keyword-query-params])
@@ -102,26 +104,6 @@
     {:delete #'user-controller/remove-user-product-category}]])
 
 ;; --------------------------
-;; Product routes
-;; --------------------------
-
-(def product-routes
-  ["/products"
-   {:tags #{"products"}}
-
-   {:get #'product-controller/get-all-products
-    :post #'product-controller/create-product}
-   ["/:id"
-    {:get #'product-controller/get-product
-     :put #'product-controller/update-product
-     :delete #'product-controller/delete-product}]
-
-   ["/categories"
-    {:get {:summary "Get all categories for products."
-           :response {200 {:body ::product-controller/categories-response}}
-           :handler #'product-controller/get-categories-handler}}]])
-
-;; --------------------------
 ;; Product reference routes
 ;; --------------------------
 
@@ -183,7 +165,9 @@
    ;; Payment Options
    ["/payment-options"
     {:get #'product-controller/get-all-payment-options
-     :post #'product-controller/create-payment-option}]
+     :post {:summary "Create payment options"
+            :parameters {:body ::product-controller/payment-options-params}
+            :handler #'product-controller/create-payment-option}}]
    ["/payment-options/:id"
     {:get #'product-controller/get-payment-option
      :put #'product-controller/update-payment-option
@@ -253,6 +237,7 @@
 
 (def api-routes
   ["/api/v1"
+   {:middleware api-middleware}
    auth-routes
    user-routes
    product-reference-routes])

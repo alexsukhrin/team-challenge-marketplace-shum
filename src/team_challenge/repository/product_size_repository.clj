@@ -1,22 +1,39 @@
 (ns team-challenge.repository.product-size-repository
   (:require [next.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [honey.sql.helpers :as h :refer [select from where insert-into columns values update set delete-from]]
             [team-challenge.db :refer [datasource]]))
 
 (defn get-all []
-  (jdbc/execute! datasource ["SELECT * FROM product_sizes"]))
+  (let [query (-> (select :*)
+                  (from :product_sizes)
+                  sql/format)]
+    (jdbc/execute! datasource query)))
 
 (defn get-by-id [id]
-  (jdbc/execute-one! datasource ["SELECT * FROM product_sizes WHERE id=?" id]))
+  (let [query (-> (select :*)
+                  (from :product_sizes)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
 (defn create! [size]
-  (jdbc/execute-one! datasource
-                     ["INSERT INTO product_sizes (name, description) VALUES (?, ?) RETURNING *"
-                      (:name size) (:description size)]))
+  (let [query (-> (insert-into :product_sizes)
+                  (columns :name :description)
+                  (values [[(:name size) (:description size)]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn update! [id size]
-  (jdbc/execute-one! datasource
-                     ["UPDATE product_sizes SET name=?, description=? WHERE id=? RETURNING *"
-                      (:name size) (:description size) id]))
+  (let [query (-> (update :product_sizes)
+                  (set {:name (:name size)
+                        :description (:description size)})
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn delete! [id]
-  (jdbc/execute-one! datasource ["DELETE FROM product_sizes WHERE id=? RETURNING id" id]))
+  (let [query (-> (delete-from :product_sizes)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))

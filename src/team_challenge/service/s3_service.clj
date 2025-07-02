@@ -8,11 +8,7 @@
   (aero/read-config (io/resource (str "config/" (or (System/getenv "APP_ENV") "dev") ".edn"))))
 
 (defstate s3-client
-  :start (aws/client {:api :s3
-                      :region (get-in (config) [:s3 :region])
-                      :credentials-provider (aws/credentials-provider
-                                             {:access-key-id (get-in (config) [:s3 :access-key-id])
-                                              :secret-access-key (get-in (config) [:s3 :secret-access-key])})}))
+  :start (aws/client {:api :s3 :region (get-in (config) [:s3 :region])}))
 
 (defn upload-file!
   [bucket key file-bytes content-type]

@@ -1,22 +1,39 @@
 (ns team-challenge.repository.product-gender-repository
   (:require [next.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [honey.sql.helpers :as h :refer [select from where insert-into columns values update set delete-from]]
             [team-challenge.db :refer [datasource]]))
 
 (defn get-all []
-  (jdbc/execute! datasource ["SELECT * FROM product_genders"]))
+  (let [query (-> (select :*)
+                  (from :product_genders)
+                  sql/format)]
+    (jdbc/execute! datasource query)))
 
 (defn get-by-id [id]
-  (jdbc/execute-one! datasource ["SELECT * FROM product_genders WHERE id=?" id]))
+  (let [query (-> (select :*)
+                  (from :product_genders)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
 (defn create! [gender]
-  (jdbc/execute-one! datasource
-                     ["INSERT INTO product_genders (name, description) VALUES (?, ?) RETURNING *"
-                      (:name gender) (:description gender)]))
+  (let [query (-> (insert-into :product_genders)
+                  (columns :name :description)
+                  (values [[(:name gender) (:description gender)]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn update! [id gender]
-  (jdbc/execute-one! datasource
-                     ["UPDATE product_genders SET name=?, description=? WHERE id=? RETURNING *"
-                      (:name gender) (:description gender) id]))
+  (let [query (-> (update :product_genders)
+                  (set {:name (:name gender)
+                        :description (:description gender)})
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn delete! [id]
-  (jdbc/execute-one! datasource ["DELETE FROM product_genders WHERE id=? RETURNING id" id]))
+  (let [query (-> (delete-from :product_genders)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))

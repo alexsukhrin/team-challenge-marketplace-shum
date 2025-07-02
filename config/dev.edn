@@ -14,7 +14,7 @@
               :dbname #env DB_NAME
               :user #env DB_USER
               :password #env DB_PASS}}
- :s3 {:bucket "your-dev-bucket"
-      :region "us-east-1"
-      :access-key-id "your-access-key-id"
-      :secret-access-key "your-secret-access-key"}}
+ :s3 {:bucket #env BUCKET
+      :region #env AWS_REGION
+      :access-key-id #env AWS_ACCESS_KEY_ID
+      :secret-access-key #env AWS_SECRET_ACCESS_KEY}}

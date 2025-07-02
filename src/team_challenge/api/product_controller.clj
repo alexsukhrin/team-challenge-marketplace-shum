@@ -1,32 +1,25 @@
-(ns team-challenge.api.product-controller)
+(ns team-challenge.api.product-controller
+  (:require
+   [clojure.spec.alpha :as s]
+   [team-challenge.repository.product-category-repository :as category-repo]
+   [team-challenge.repository.product-color-repository :as color-repo]
+   [team-challenge.repository.product-size-repository :as size-repo]
+   [team-challenge.repository.product-material-repository :as material-repo]
+   [team-challenge.repository.product-gender-repository :as gender-repo]
+   [team-challenge.repository.product-clothing-size-repository :as product-clothing-size-repo]
+   [team-challenge.repository.payment-option-repository :as payment-option-repo]
+   [team-challenge.repository.delivery-option-repository :as delivery-option-repo]
+   [team-challenge.repository.product-repository :as product-repo]
+   [team-challenge.repository.product-photo-repository :as product-photo-repo]
+   [team-challenge.repository.product-characteristic-repository :as product-characteristic-repo]
+   [team-challenge.repository.product-materials-repository :as product-materials-repo]
+   [team-challenge.service.s3-service :as s3-service]
+   [aero.core :as aero]
+   [clojure.java.io :as io]))
 
-(require '[clojure.spec.alpha :as s])
-(require '[team-challenge.repository.product-category-repository :as category-repo])
-(require '[team-challenge.repository.product-color-repository :as color-repo])
-(require '[team-challenge.repository.product-size-repository :as size-repo])
-(require '[team-challenge.repository.product-material-repository :as material-repo])
-(require '[team-challenge.repository.product-gender-repository :as gender-repo])
-(require '[team-challenge.repository.product-clothing-size-repository :as product-clothing-size-repo])
-(require '[team-challenge.repository.payment-option-repository :as payment-option-repo])
-(require '[team-challenge.repository.delivery-option-repository :as delivery-option-repo])
-(require '[team-challenge.repository.product-repository :as product-repo])
-(require '[team-challenge.repository.product-photo-repository :as product-photo-repo])
-(require '[team-challenge.repository.product-characteristic-repository :as product-characteristic-repo])
-(require '[team-challenge.repository.product-materials-repository :as product-materials-repo])
-(require '[team-challenge.service.s3-service :as s3-service])
-(require '[aero.core :as aero])
-(require '[clojure.java.io :as io])
-
-(s/def ::category_id int?)
 (s/def ::name string?)
-(s/def ::photo string?)
-(s/def ::category (s/keys :req-un [::category_id ::name ::photo]))
-(s/def ::categories (s/coll-of ::category))
-(s/def ::categories-response (s/keys :req-un [::categories]))
-
-(defn get-categories-handler []
-  {:status 200
-   :body {:categories []}})
+(s/def ::description string?)
+(s/def ::payment-options-params (s/keys :req-un [::name ::description]))
 
 ;; Product Categories
 (defn list-product-categories-handler [_]
@@ -37,11 +30,11 @@
     {:status 200 :body {:category cat}}
     {:status 404 :body {:error "Not found"}}))
 
-(defn create-product-category-handler [{:keys [body-params]}]
-  {:status 201 :body {:category (category-repo/create! body-params)}})
+(defn create-product-category-handler [{:keys [body]}]
+  {:status 201 :body {:category (category-repo/create! body)}})
 
-(defn update-product-category-handler [{:keys [path-params body-params]}]
-  (if-let [cat (category-repo/update! (parse-long (:id path-params)) body-params)]
+(defn update-product-category-handler [{:keys [path-params body]}]
+  (if-let [cat (category-repo/update! (parse-long (:id path-params)) body)]
     {:status 200 :body {:category cat}}
     {:status 404 :body {:error "Not found"}}))
 
@@ -274,16 +267,16 @@
     {:status 200 :body option}
     {:status 404 :body {:error "Payment option not found"}}))
 
-(defn create-payment-option [{:keys [body-params]}]
+(defn create-payment-option [{:keys [body]}]
   (try
-    (let [created (payment-option-repo/create! body-params)]
+    (let [created (payment-option-repo/create! body)]
       {:status 201 :body created})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn update-payment-option [{{:keys [id]} :path-params :keys [body-params]}]
+(defn update-payment-option [{{:keys [id]} :path-params :keys [body]}]
   (try
-    (if-let [updated (payment-option-repo/update! (parse-long id) body-params)]
+    (if-let [updated (payment-option-repo/update! (parse-long id) body)]
       {:status 200 :body updated}
       {:status 404 :body {:error "Payment option not found"}})
     (catch Exception e
@@ -291,7 +284,7 @@
 
 (defn delete-payment-option [{{:keys [id]} :path-params}]
   (try
-    (if-let [deleted (payment-option-repo/delete! (parse-long id))]
+    (if-let [_ (payment-option-repo/delete! (parse-long id))]
       {:status 204}
       {:status 404 :body {:error "Payment option not found"}})
     (catch Exception e
@@ -307,16 +300,16 @@
     {:status 200 :body option}
     {:status 404 :body {:error "Delivery option not found"}}))
 
-(defn create-delivery-option [{:keys [body-params]}]
+(defn create-delivery-option [{:keys [body]}]
   (try
-    (let [created (delivery-option-repo/create! body-params)]
+    (let [created (delivery-option-repo/create! body)]
       {:status 201 :body created})
     (catch Exception e
       {:status 400 :body {:error (.getMessage e)}})))
 
-(defn update-delivery-option [{{:keys [id]} :path-params :keys [body-params]}]
+(defn update-delivery-option [{{:keys [id]} :path-params :keys [body]}]
   (try
-    (if-let [updated (delivery-option-repo/update! (parse-long id) body-params)]
+    (if-let [updated (delivery-option-repo/update! (parse-long id) body)]
       {:status 200 :body updated}
       {:status 404 :body {:error "Delivery option not found"}})
     (catch Exception e

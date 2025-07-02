@@ -1,22 +1,40 @@
 (ns team-challenge.repository.product-color-repository
   (:require [next.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [honey.sql.helpers :as h :refer [select from where insert-into columns values update set delete-from]]
             [team-challenge.db :refer [datasource]]))
 
 (defn get-all []
-  (jdbc/execute! datasource ["SELECT * FROM product_colors"]))
+  (let [query (-> (select :*)
+                  (from :product_colors)
+                  sql/format)]
+    (jdbc/execute! datasource query)))
 
 (defn get-by-id [id]
-  (jdbc/execute-one! datasource ["SELECT * FROM product_colors WHERE id=?" id]))
+  (let [query (-> (select :*)
+                  (from :product_colors)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
 (defn create! [color]
-  (jdbc/execute-one! datasource
-                     ["INSERT INTO product_colors (name, hex, description) VALUES (?, ?, ?) RETURNING *"
-                      (:name color) (:hex color) (:description color)]))
+  (let [query (-> (insert-into :product_colors)
+                  (columns :name :hex :description)
+                  (values [[(:name color) (:hex color) (:description color)]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn update! [id color]
-  (jdbc/execute-one! datasource
-                     ["UPDATE product_colors SET name=?, hex=?, description=? WHERE id=? RETURNING *"
-                      (:name color) (:hex color) (:description color) id]))
+  (let [query (-> (update :product_colors)
+                  (set {:name (:name color)
+                        :hex (:hex color)
+                        :description (:description color)})
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))
 
 (defn delete! [id]
-  (jdbc/execute-one! datasource ["DELETE FROM product_colors WHERE id=? RETURNING id" id]))
+  (let [query (-> (delete-from :product_colors)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query {:return-keys true})))

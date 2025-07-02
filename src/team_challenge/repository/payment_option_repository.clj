@@ -1,22 +1,39 @@
 (ns team-challenge.repository.payment-option-repository
   (:require [next.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [honey.sql.helpers :as h :refer [select from where insert-into columns values update set delete-from]]
             [team-challenge.db :refer [datasource]]))
 
 (defn get-all []
-  (jdbc/execute! datasource ["SELECT * FROM payment_options"]))
+  (let [query (-> (select :*)
+                  (from :payment_options)
+                  sql/format)]
+    (jdbc/execute! datasource query)))
 
 (defn get-by-id [id]
-  (jdbc/execute-one! datasource ["SELECT * FROM payment_options WHERE id=?" id]))
+  (let [query (-> (select :*)
+                  (from :payment_options)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
-(defn create! [option]
-  (jdbc/execute-one! datasource
-                     ["INSERT INTO payment_options (name, description) VALUES (?, ?) RETURNING *"
-                      (:name option) (:description option)]))
+(defn create! [{:keys [name description]}]
+  (let [query (-> (insert-into :payment_options)
+                  (columns :name :description)
+                  (values [[name description]])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
 (defn update! [id option]
-  (jdbc/execute-one! datasource
-                     ["UPDATE payment_options SET name=?, description=? WHERE id=? RETURNING *"
-                      (:name option) (:description option) id]))
+  (let [query (-> (update :payment_options)
+                  (set {:name (:name option)
+                        :description (:description option)})
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
 
 (defn delete! [id]
-  (jdbc/execute-one! datasource ["DELETE FROM payment_options WHERE id=? RETURNING id" id]))
+  (let [query (-> (delete-from :payment_options)
+                  (where [:= :id id])
+                  sql/format)]
+    (jdbc/execute-one! datasource query)))
