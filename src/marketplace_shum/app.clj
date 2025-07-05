@@ -16,6 +16,7 @@
 (defn -main
   "Start system"
   []
+  (prn "Start system")
   (start-system))
 
 (comment
