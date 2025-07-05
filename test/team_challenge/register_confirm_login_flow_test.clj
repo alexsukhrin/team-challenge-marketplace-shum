@@ -1,5 +1,5 @@
 (ns team-challenge.register-confirm-login-flow-test
-  (:require 
+  (:require
    [clojure.test :refer [deftest testing is]]
    [team-challenge.crud-api-test :as utils]
    [team-challenge.repository.user-repository :as user-repo]

@@ -10,7 +10,7 @@
          :tls    true}
  :datomic {:server-type :datomic-local 
            :system #env DATOMIC_SYSTEM
-           :storage-dir #env DATOMIC_STORAGE}
+           :storage-dir :mem}
  :db {:name #env DB_NAME}
  :s3 {:bucket #env BUCKET
       :region #env AWS_REGION

@@ -14,7 +14,7 @@
   (json/parse-string (:body resp) true))
 
 (defn get-api-url [url]
-  (let [host (get-in config/*config* [:web-server :host]) 
+  (let [host (get-in config/*config* [:web-server :host])
         port (get-in config/*config* [:web-server :port])]
     (str host ":" port url)))
 
@@ -33,71 +33,71 @@
           (mount/stop))))))
 
 (deftest payment-option-crud-api-test []
-  (let [api-auth-url (get-api-url "/api/v1/payment-options") 
+  (let [api-auth-url (get-api-url "/api/v1/payment-options")
         params {:name "Card" :description "Credit card"}
-        resp (http/post api-auth-url 
-                          {:headers {"Content-Type" "application/json"}
-                           :body (json/generate-string params)
-                           :throw-exceptions false})
+        resp (http/post api-auth-url
+                        {:headers {"Content-Type" "application/json"}
+                         :body (json/generate-string params)
+                         :throw-exceptions false})
         body (parse-body resp)
         option-id (:payment_options/id body)]
-    
+
     (testing "Create payment option"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get payment option"
       (let [resp (http/get (str api-auth-url "/" option-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update payment option"
       (let [resp (http/put (str api-auth-url "/" option-id)
                            {:headers {"Content-Type" "application/json"}
                             :body (json/generate-string {:name "Cash" :description "Cash payment"})
                             :throw-exceptions false})
             body (parse-body resp)]
-         
+
         (is (= 200 (:status resp)))
         (is (= (:payment_options/name body) "Cash"))))
-    
+
     (testing "List payment options"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete payment option"
       (let [resp (http/delete (str api-auth-url "/" option-id))]
         (is (= 204 (:status resp)))))))
 
 (deftest delivery-option-crud-api-test
-  (let [api-auth-url (get-api-url "/api/v1/delivery-options") 
+  (let [api-auth-url (get-api-url "/api/v1/delivery-options")
         params {:name "Nova Poshta" :description "Доставка по Україні"}
-        resp (http/post api-auth-url 
-                          {:headers {"Content-Type" "application/json"}
-                           :body (json/generate-string params)
-                           :throw-exceptions false})
+        resp (http/post api-auth-url
+                        {:headers {"Content-Type" "application/json"}
+                         :body (json/generate-string params)
+                         :throw-exceptions false})
         body (parse-body resp)
         option-id (:delivery_options/id body)]
-    
+
     (testing "Create delivery option"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get delivery option"
       (let [resp (http/get (str api-auth-url "/" option-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update delivery option"
       (let [resp (http/put (str api-auth-url "/" option-id)
                            {:headers {"Content-Type" "application/json"}
                             :body (json/generate-string {:name "Самовивіз" :description "Забрати з магазину"})
                             :throw-exceptions false})
             body (parse-body resp)]
-         
+
         (is (= 200 (:status resp)))
         (is (= (:delivery_options/name body) "Самовивіз"))))
-    
+
     (testing "List delivery options"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete delivery option"
       (let [resp (http/delete (str api-auth-url "/" option-id))]
         (is (= 204 (:status resp)))))))
@@ -111,14 +111,14 @@
                          :throw-exceptions false})
         body (parse-body resp)
         option-id (get-in body [:category :product_categories/id])]
-    
+
     (testing "Create category"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get category"
       (let [resp (http/get (str api-auth-url "/" option-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update category"
       (let [resp (http/put (str api-auth-url "/" option-id)
                            {:headers {"Content-Type" "application/json"}
@@ -127,11 +127,11 @@
             body (parse-body resp)]
         (is (= 200 (:status resp)))
         (is (= (get-in body [:category :product_categories/name]) "Самовивіз"))))
-    
+
     (testing "List categories"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete category"
       (let [resp (http/delete (str api-auth-url "/" option-id))]
         (is (= 204 (:status resp)))))))
@@ -144,14 +144,14 @@
                          :throw-exceptions false})
         body (parse-body resp)
         color-id (get-in body [:color :product_colors/id])]
-    
+
     (testing "Create color"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get color"
       (let [resp (http/get (str api-auth-url "/" color-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update color"
       (let [resp (http/put (str api-auth-url "/" color-id)
                            {:headers {"Content-Type" "application/json"}
@@ -160,11 +160,11 @@
             body (parse-body resp)]
         (is (= 200 (:status resp)))
         (is (= (get-in body [:color :product_colors/name]) "Red"))))
-    
+
     (testing "List colors"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete color"
       (let [resp (http/delete (str api-auth-url "/" color-id))]
         (is (= 204 (:status resp)))))))
@@ -177,14 +177,14 @@
                          :throw-exceptions false})
         body (parse-body resp)
         size-id (get-in body [:size :product_sizes/id])]
-    
+
     (testing "Create size"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get size"
       (let [resp (http/get (str api-auth-url "/" size-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update size"
       (let [resp (http/put (str api-auth-url "/" size-id)
                            {:headers {"Content-Type" "application/json"}
@@ -193,11 +193,11 @@
             body (parse-body resp)]
         (is (= 200 (:status resp)))
         (is (= (get-in body [:size :product_sizes/name]) "XL"))))
-    
+
     (testing "List sizes"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete size"
       (let [resp (http/delete (str api-auth-url "/" size-id))]
         (is (= 204 (:status resp)))))))
@@ -210,14 +210,14 @@
                          :throw-exceptions false})
         body (parse-body resp)
         material-id (get-in body [:material :materials/id])]
-    
+
     (testing "Create material"
       (is (= 201 (:status resp))))
-    
+
     (testing "Get material"
       (let [resp (http/get (str api-auth-url "/" material-id))]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Update material"
       (let [resp (http/put (str api-auth-url "/" material-id)
                            {:headers {"Content-Type" "application/json"}
@@ -226,12 +226,99 @@
             body (parse-body resp)]
         (is (= 200 (:status resp)))
         (is (= (get-in body [:material :materials/name]) "Wool"))))
-    
+
     (testing "List materials"
       (let [resp (http/get api-auth-url)]
         (is (= 200 (:status resp)))))
-    
+
     (testing "Delete material"
       (let [resp (http/delete (str api-auth-url "/" material-id))]
+        (is (= 204 (:status resp)))))))
+
+(deftest product-gender-crud-api-test
+  (let [api-auth-url (get-api-url "/api/v1/product-genders")
+        resp (http/post api-auth-url
+                        {:headers {"Content-Type" "application/json"}
+                         :body (json/generate-string {:name "Unisex" :description "For all"})
+                         :throw-exceptions false})
+        body (parse-body resp)
+        gender-id (get-in body [:gender :product_genders/id])]
+
+    (testing "Create gender"
+      (is (= 201 (:status resp))))
+
+    (testing "Get gender"
+      (let [resp (http/get (str api-auth-url "/" gender-id))]
+        (is (= 200 (:status resp)))))
+
+    (testing "Update gender"
+      (let [resp (http/put (str api-auth-url "/" gender-id)
+                           {:headers {"Content-Type" "application/json"}
+                            :body (json/generate-string {:name "Male" :description "For men"})
+                            :throw-exceptions false})
+            body (parse-body resp)]
+        (is (= 200 (:status resp)))
+        (is (= (get-in body [:gender :product_genders/name]) "Male"))))
+
+    (testing "List genders"
+      (let [resp (http/get api-auth-url)]
+        (is (= 200 (:status resp)))))
+
+    (testing "Delete gender"
+      (let [resp (http/delete (str api-auth-url "/" gender-id))]
+        (is (= 204 (:status resp)))))))
+
+(deftest product-characteristic-crud-api-test
+  (let [api-auth-url (get-api-url "/api/v1/product-characteristics")
+        resp (http/post api-auth-url
+                        {:headers {"Content-Type" "application/json"}
+                         :body (json/generate-string {:name "Waterproof" :description "Does not absorb water"})
+                         :throw-exceptions false})
+        body (parse-body resp)
+        gender-id (get-in body [:gender :product_genders/id])]
+
+    (testing "Create gender"
+      (is (= 201 (:status resp))))
+
+    (testing "Get gender"
+      (let [resp (http/get (str api-auth-url "/" gender-id))]
+        (is (= 200 (:status resp)))))
+
+    (testing "Update gender"
+      (let [resp (http/put (str api-auth-url "/" gender-id)
+                           {:headers {"Content-Type" "application/json"}
+                            :body (json/generate-string {:name "Male" :description "For men"})
+                            :throw-exceptions false})
+            body (parse-body resp)]
+        (is (= 200 (:status resp)))
+        (is (= (get-in body [:gender :product_genders/name]) "Male"))))
+
+    (testing "List genders"
+      (let [resp (http/get api-auth-url)]
+        (is (= 200 (:status resp)))))
+
+    (testing "Delete gender"
+      (let [resp (http/delete (str api-auth-url "/" gender-id))]
+        (is (= 204 (:status resp))))))
+
+  (let [app (reitit.ring/ring-handler (team-challenge.api.routes/make-routes))
+        characteristic {:name "Waterproof" :description "Does not absorb water"}
+        create-char (app (-> (mock/request :post "/api/v1/product-characteristics") (mock/json-body characteristic)))
+        char-id (:id (parse-body create-char))]
+    (testing "Create characteristic"
+      (is (= 201 (:status create-char))))
+    (testing "Get characteristic"
+      (let [resp (app (mock/request :get (str "/api/v1/product-characteristics/" char-id)))]
+        (is (= 200 (:status resp)))))
+    (testing "Update characteristic"
+      (let [resp (app (-> (mock/request :put (str "/api/v1/product-characteristics/" char-id)) (mock/json-body {:name "Breathable" :description "Lets air through"})))
+            body (parse-body resp)]
+        (is (= 200 (:status resp)))
+        (is (= (:name body) "Breathable"))))
+    (testing "List characteristics"
+      (let [resp (app (mock/request :get "/api/v1/product-characteristics"))]
+        (is (= 200 (:status resp)))))
+    (testing "Delete characteristic"
+      (let [resp (app (mock/request :delete (str "/api/v1/product-characteristics/" char-id)))]
         (is (= 204 (:status resp)))))))
 

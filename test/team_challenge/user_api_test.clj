@@ -22,4 +22,4 @@
         (is (= 200 (:status resp)))))
     (testing "Remove category from user"
       (let [resp (app (mock/request :delete (str "/api/v1/users/" user-id "/product-categories/" category-id)))]
-        (is (= 204 (:status resp))))))) 
+        (is (= 204 (:status resp)))))))

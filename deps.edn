@@ -1,14 +1,9 @@
 {:paths ["src" "resources" "."]
 
  :deps {org.clojure/clojure {:mvn/version "1.12.1"}
-        ;; Postgresql
-        org.postgresql/postgresql {:mvn/version "42.7.3"}
 
-        ;; HoneySQL
-        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
-
-        ;; next.jdbc
-        com.github.seancorfield/next.jdbc {:mvn/version "1.3.1048"}
+        ;; Datomic
+        com.datomic/local {:mvn/version "1.0.291"}
 
         ;; Auth
         buddy/buddy-hashers {:mvn/version "2.0.167"}
@@ -58,11 +53,11 @@
          :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]}
 
-  :run {:main-opts ["-m" "team-challenge.marketplace-shum"]}
+  :run {:main-opts ["-m" "marketplace-shum.app"]}
 
   :uberjar {:replace-deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
             :exec-fn build/uber
-            :exec-args {:main team-challenge.marketplace-shum
+            :exec-args {:main marketplace-shum.app
                         :uber-file "target/app.jar"}
             :ns-default build}
 

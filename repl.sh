@@ -10,5 +10,5 @@ else
   echo "⚠️  .env file not found, skipping"
 fi
 
-echo "🟢 Starting REPL in team-challenge.marketplace-shum namespace..."
+echo "🟢 Starting REPL in marketplace-shum.core namespace..."
 clj -M:dev
