@@ -19,6 +19,7 @@ WORKDIR /app
 # Copy built artifacts
 COPY --from=builder /app/target/app.jar ./app.jar
 COPY --from=builder /app/config/ ./config
+COPY --from=builder /app/resources/ ./resources
 
 EXPOSE 4000
 
