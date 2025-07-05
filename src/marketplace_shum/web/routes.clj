@@ -6,9 +6,8 @@
    [reitit.coercion.spec]
    [reitit.openapi :as openapi]
    [marketplace-shum.web.middlewares :refer [middleware]]
-   [marketplace-shum.health.handler :as health]
-   ;[marketplace-shum.users.handler :as u]
-   ))
+   [marketplace-shum.health.handler :as health] 
+   [marketplace-shum.users.handler :as user]))
 
 (def swagger
   ["/swagger.json"
@@ -37,7 +36,7 @@
 
 (def v1-routes
   ["/api/v1"
-   auth/auth-routes])
+   user/routes])
 
 (def make-routes
   (ring/ring-handler
@@ -45,7 +44,6 @@
     [swagger
      openapi
      health/route
-     ;v1-routes
-     ]
+     v1-routes]
     middleware)
    (swagger-ui)))

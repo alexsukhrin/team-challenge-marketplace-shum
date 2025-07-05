@@ -19,50 +19,50 @@
 (s/def ::message string?)
 (s/def ::register-params (s/keys :req-un [::first_name ::last_name ::email ::password]))
 
-(defn create-auth!
-  [conn {:keys [user password-hash verification-token password-reset-token password-reset-token-expires-at]}]
-  (d/transact conn {:tx-data [(merge
-                               {:auth/user user
-                                :auth/password-hash password-hash}
-                               (when verification-token {:auth/verification-token verification-token})
-                               (when password-reset-token {:auth/password-reset-token password-reset-token})
-                               (when password-reset-token-expires-at {:auth/password-reset-token-expires-at password-reset-token-expires-at}))]}))
+;; (defn create-auth!
+;;   [conn {:keys [user password-hash verification-token password-reset-token password-reset-token-expires-at]}]
+;;   (d/transact conn {:tx-data [(merge
+;;                                {:auth/user user
+;;                                 :auth/password-hash password-hash}
+;;                                (when verification-token {:auth/verification-token verification-token})
+;;                                (when password-reset-token {:auth/password-reset-token password-reset-token})
+;;                                (when password-reset-token-expires-at {:auth/password-reset-token-expires-at password-reset-token-expires-at}))]}))
 
-(defn find-auth-by-user
-  [db user-id]
-  (d/pull db '[*] [:auth/user user-id]))
+;; (defn find-auth-by-user
+;;   [db user-id]
+;;   (d/pull db '[*] [:auth/user user-id]))
 
-(defn set-verification-token!
-  [conn user-id token]
-  (d/transact conn {:tx-data [[:db/add [:auth/user user-id] :auth/verification-token token]]}))
+;; (defn set-verification-token!
+;;   [conn user-id token]
+;;   (d/transact conn {:tx-data [[:db/add [:auth/user user-id] :auth/verification-token token]]}))
 
-(defn set-password-reset-token!
-  [conn user-id token expires-at]
-  (d/transact conn {:tx-data [[:db/add [:auth/user user-id] :auth/password-reset-token token]
-                              [:db/add [:auth/user user-id] :auth/password-reset-token-expires-at expires-at]]}))
+;; (defn set-password-reset-token!
+;;   [conn user-id token expires-at]
+;;   (d/transact conn {:tx-data [[:db/add [:auth/user user-id] :auth/password-reset-token token]
+;;                               [:db/add [:auth/user user-id] :auth/password-reset-token-expires-at expires-at]]}))
 
-(defn create-auth!
-  [conn {:keys [user password-hash verification-token]}]
-  (auth-repo/create-auth! conn {:user user
-                                :password-hash password-hash
-                                :verification-token verification-token}))
+;; (defn create-auth!
+;;   [conn {:keys [user password-hash verification-token]}]
+;;   (auth-repo/create-auth! conn {:user user
+;;                                 :password-hash password-hash
+;;                                 :verification-token verification-token}))
 
-(defn get-auth-by-user
-  [db user-id]
-  (auth-repo/find-auth-by-user db user-id))
+;; (defn get-auth-by-user
+;;   [db user-id]
+;;   (auth-repo/find-auth-by-user db user-id))
 
-(defn set-verification-token!
-  [conn user-id token]
-  (auth-repo/set-verification-token! conn user-id token))
+;; (defn set-verification-token!
+;;   [conn user-id token]
+;;   (auth-repo/set-verification-token! conn user-id token))
 
-(defn set-password-reset-token!
-  [conn user-id token expires-at]
-  (auth-repo/set-password-reset-token! conn user-id token expires-at))
+;; (defn set-password-reset-token!
+;;   [conn user-id token expires-at]
+;;   (auth-repo/set-password-reset-token! conn user-id token expires-at))
 
 (defn register-handler [request]
   (let [user-data (:body request)]
     (try
-      (user-service/register-user user-data)
+      ;;(user-service/register-user user-data)
       {:status 201
        :body {:message "User registered. Please check your email for a confirmation link."}}
       (catch clojure.lang.ExceptionInfo e
