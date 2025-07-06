@@ -5,6 +5,9 @@
    :body {:message "pong"}})
 
 (def route
-  ["/ping" {:get {:summary "health check system"
-                  :responses {200 {:body {:message string?}}}
-                  :handler #'ping_handler}}])
+  ["/health"
+   {:tags ["health"]}
+
+   ["" {:get {:summary "health check system"
+              :responses {200 {:body {:message string?}}}
+              :handler #'ping_handler}}]])

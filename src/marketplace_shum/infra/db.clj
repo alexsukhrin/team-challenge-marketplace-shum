@@ -10,5 +10,11 @@
            (d/create-database client db-name)
            (d/connect client db-name)))
 
-(defn tx! [data]
-  (d/transact db data))
+(comment
+  (def db-name {:db-name (get-in config/*config* [:db :name])})
+  (def client (d/client (:datomic config/*config*)))
+  (d/list-databases client {})
+  (def conn (d/connect client db-name))
+  (def db (d/db conn))
+  (d/create-database client db-name)
+  (d/delete-database client db-name))

@@ -31,7 +31,7 @@
   :db/doc         "Whether the user has confirmed their email address."}
 
  {:db/ident       :user/email-confirmation-token
-  :db/valueType   :db.type/string
+  :db/valueType   :db.type/uuid
   :db/cardinality :db.cardinality/one
   :db/doc         "A token sent to the user to confirm their email address."}
 
