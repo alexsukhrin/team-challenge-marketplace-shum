@@ -7,28 +7,24 @@
    [marketplace-shum.infra.db :refer [db]]))
 
 (defn files []
-  (let [schemas-dir (io/resource "schemas")]
-    (println "[migrations] schemas-dir:" schemas-dir)
-    (if (nil? schemas-dir)
-      (do (println "[migrations] WARNING: schemas resource not found!")
-          [])
-      (let [schemas-url (io/as-url schemas-dir)]
-        (if (= "jar" (.getProtocol schemas-url))
-          (let [jar-connection (.openConnection schemas-url)
-                jar-file (-> jar-connection .getJarFileURL io/as-url .getFile)]
-            (with-open [jar (java.util.jar.JarFile. jar-file)]
-              (->> (.entries jar)
-                   (filter #(and (.startsWith (.getName %) "schemas/")
-                                 (.endsWith (.getName %) ".edn")))
-                   (map #(.getName %)))))
-          (let [dir (io/file schemas-dir)]
-            (println "[migrations] local dir:" (.getAbsolutePath dir))
-            (if (.isDirectory dir)
-              (->> (.listFiles dir)
+  (let [dir "schemas"
+        cl (.getContextClassLoader (Thread/currentThread))
+        urls (enumeration-seq (.getResources cl dir))]
+    (mapcat
+      (fn [url]
+        (let [conn (.openConnection url)]
+          (if (instance? java.net.JarURLConnection conn)
+            (let [jar-file (.getJarFile ^java.net.JarURLConnection conn)]
+              (->> (enumeration-seq (.entries jar-file))
+                   (map #(.getName %))
+                   (filter #(and (.startsWith % (str dir "/"))
+                                 (.endsWith % ".edn")))))
+            ;; dev-режим
+            (let [f (io/file (io/resource dir))]
+              (->> (.listFiles f)
                    (filter #(and (.isFile %) (.endsWith (.getName %) ".edn")))
-                   (map #(.getPath %)))
-              (do (println "[migrations] WARNING: schemas directory not found or not a directory!")
-                  []))))))))
+                   (map #(.getPath %)))))))
+      urls)))
 
 (defn load-schema [schema-path]
   (if (.startsWith schema-path "schemas/")
