@@ -173,4 +173,5 @@ jobs:
               --name "$CONTAINER_NAME" \
               --restart always \
               -p 8032:4000 \
+              -v datomic-storage:/tmp/datomic-local-prod \
               "$IMAGE_NAME"
