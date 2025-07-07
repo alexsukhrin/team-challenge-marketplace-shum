@@ -7,21 +7,19 @@
    [marketplace-shum.infra.server :as s])
   (:gen-class))
 
-(defn start-system []
-  (mount/start #'config/*config*)
-  (mount/start #'db/db)
-  (mount/start #'m/migratus)
-  (mount/start #'s/http-server))
-
 (defn -main
   "Start system"
   []
   (prn "Start system")
-  (start-system))
+  (mount/start))
 
 (comment
   ;; start
-  (start-system)
+
+  (mount/start #'config/*config*)
+  (mount/start #'db/db)
+  (mount/start #'m/migratus)
+  (mount/start #'s/http-server)
 
   ;; stats 
   (mount/running-states))

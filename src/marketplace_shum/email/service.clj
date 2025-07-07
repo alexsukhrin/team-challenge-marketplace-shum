@@ -22,7 +22,7 @@
 (defn- create-confirmation-email [to token user-name]
   (let [base-url (get-in config/*config* [:web-server :host])
         port (get-in config/*config* [:web-server :port])
-        confirmation-link (str base-url ":" port "/api/v1/auth/confirm-email?token=" token)
+        confirmation-link (str base-url ":" port "/api/v1/auth/confirm?token=" token)
         html-body (render-template "templates/email.html" {"user" user-name "link" confirmation-link})]
     {:from (get-in config/*config* [:email :from])
      :to to
@@ -47,5 +47,4 @@
   (postal/send-message email-config email-message)
   (str "base-url" ":" 3344 "/api/v1/auth/confirm-email?token=" (random-uuid))
 
-  (send-confirmation-email to (random-uuid) user-name)
-  )
+  (send-confirmation-email to (random-uuid) user-name))

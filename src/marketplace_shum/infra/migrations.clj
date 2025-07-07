@@ -30,8 +30,11 @@
     (read-config (io/file schema-path))))
 
 (defn migrate []
-  (for [f (files)]
-    (do (prn (str "Migrate -> " f))
-        (d/transact db {:tx-data (load-schema f)}))))
+  (doseq [f (files)]
+    (prn (str "Migrate -> " f)
+         (d/transact db {:tx-data (load-schema f)}))))
 
-(defstate migratus :start (migrate))
+(defstate migratus :start (try
+                            (println "Start migrations...")
+                            (migrate)
+                            (catch Exception e (str "caught exception: " (.getMessage e)))))

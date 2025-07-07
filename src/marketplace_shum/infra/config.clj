@@ -13,7 +13,8 @@
        default)))
 
 (defstate ^:dynamic *config*
-  :start (try (read-config (str "config/" (env! "APP_ENV") ".edn"))
+  :start (try (println "Load config...")
+              (read-config (str "config/" (env! "APP_ENV") ".edn"))
               (catch NumberFormatException _
                 (println "Not valid format config")
                 (System/exit 1))))

@@ -6,5 +6,8 @@
    [marketplace-shum.web.routes :refer [make-routes]]))
 
 (defstate http-server
-  :start (http-kit/run-server #'make-routes {:port (get-in config/*config* [:web-server :port])})
+  :start (try
+           (println "Start server...")
+           (http-kit/run-server #'make-routes {:port (get-in config/*config* [:web-server :port])})
+           (catch Exception e (str "caught exception: " (.getMessage e))))
   :stop (when http-server (println "Stopping server...") (http-server)))

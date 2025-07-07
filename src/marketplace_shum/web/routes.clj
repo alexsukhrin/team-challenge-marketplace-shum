@@ -7,7 +7,7 @@
    [reitit.openapi :as openapi]
    [marketplace-shum.web.middlewares :refer [middleware api-middleware common-middleware]]
    [marketplace-shum.health.handler :as health]
-   [marketplace-shum.auth.handler :as auth]))
+   [marketplace-shum.auth.routes :as auth-routes]))
 
 (def swagger
   ["/swagger.json"
@@ -37,7 +37,7 @@
 (def v1-routes
   ["/api/v1"
    {:middleware api-middleware}
-   auth/routes])
+   auth-routes/routes])
 
 (def make-routes
   (ring/ring-handler
