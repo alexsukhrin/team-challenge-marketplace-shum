@@ -35,14 +35,18 @@
 
 (defn login-handler [{{{:keys [email password]} :body} :parameters}]
   (let [user (user-repo/find-user-by-email db email)
-        password-hash (cond
-                        (and user (:user/email-confirmed? user)) (:user/password user)
-                        :else dummy-hash)]
-    
-    (when (and user (:user/email-confirmed? user) (auth-service/verify-password password password-hash))
+        password-hash (if (and user (:user/email-confirmed? user))
+                        (:user/password user)
+                        dummy-hash)]
+    (if (and user
+             (:user/email-confirmed? user)
+             (auth-service/verify-password password password-hash))
       {:status 200
        :body {:access-token (auth-service/create-access-token user)
-              :refresh-token (auth-service/create-refresh-token user)}})))
+              :refresh-token (auth-service/create-refresh-token user)}}
+      {:status 401
+       :body {:error "invalid_credentials"
+              :message "Invalid email or password"}})))
 
 (defn confirm-email-handler [{{:keys [token]} :query-params}]
   (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]
