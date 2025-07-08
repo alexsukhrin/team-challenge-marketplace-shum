@@ -7,6 +7,7 @@
          :user   #env EMAIL_USER
          :pass   #env EMAIL_PASS
          :from   #env EMAIL_FROM
+         :ssl    false
          :tls    true}
  :datomic {:server-type :datomic-local 
            :system #env DATOMIC_SYSTEM
