@@ -28,15 +28,21 @@
   [conn id]
   (d/pull (d/db conn) '[*] [:user/id (if (uuid? id) id (java.util.UUID/fromString id))]))
 
-(defn find-user-by-email
-  [conn email]
+(defn find-user-by-attr
+  [conn attr value]
   (let [result (d/q '[:find ?e
-                      :in $ ?email
-                      :where [?e :user/email ?email]]
-                    (d/db conn) email)
+                      :in $ ?attr ?value
+                      :where [?e ?attr ?value]]
+                    (d/db conn) attr value)
         eid (ffirst result)]
     (when eid
       (d/pull (d/db conn) '[*] eid))))
+
+(defn find-user-by-email [conn email]
+  (find-user-by-attr conn :user/email email))
+
+(defn find-user-by-email-confirmation-token [conn token]
+  (find-user-by-attr conn :user/email-confirmation-token token))
 
 (defn set-email-confirmed!
   [conn id confirmed?]

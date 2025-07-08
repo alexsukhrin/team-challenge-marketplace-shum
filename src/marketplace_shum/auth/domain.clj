@@ -1,5 +1,5 @@
 (ns marketplace-shum.auth.domain
-  (:require 
+  (:require
    [clojure.spec.alpha :as s]))
 
 (s/def ::email string?)

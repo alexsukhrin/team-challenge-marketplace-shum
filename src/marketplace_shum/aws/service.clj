@@ -3,8 +3,8 @@
             [mount.core :refer [defstate]]
             [marketplace-shum.infra.config :as config]))
 
-(defstate client-s3 
-  :start (aws/client {:api :s3 
+(defstate client-s3
+  :start (aws/client {:api :s3
                       :region (get-in config/*config* [:s3 :region])}))
 
 (defn upload-file!

@@ -11,20 +11,20 @@
         cl (.getContextClassLoader (Thread/currentThread))
         urls (enumeration-seq (.getResources cl dir))]
     (mapcat
-      (fn [url]
-        (let [conn (.openConnection url)]
-          (if (instance? java.net.JarURLConnection conn)
-            (let [jar-file (.getJarFile ^java.net.JarURLConnection conn)]
-              (->> (enumeration-seq (.entries jar-file))
-                   (map #(.getName %))
-                   (filter #(and (.startsWith % (str dir "/"))
-                                 (.endsWith % ".edn")))))
+     (fn [url]
+       (let [conn (.openConnection url)]
+         (if (instance? java.net.JarURLConnection conn)
+           (let [jar-file (.getJarFile ^java.net.JarURLConnection conn)]
+             (->> (enumeration-seq (.entries jar-file))
+                  (map #(.getName %))
+                  (filter #(and (.startsWith % (str dir "/"))
+                                (.endsWith % ".edn")))))
             ;; dev-режим
-            (let [f (io/file (io/resource dir))]
-              (->> (.listFiles f)
-                   (filter #(and (.isFile %) (.endsWith (.getName %) ".edn")))
-                   (map #(.getPath %)))))))
-      urls)))
+           (let [f (io/file (io/resource dir))]
+             (->> (.listFiles f)
+                  (filter #(and (.isFile %) (.endsWith (.getName %) ".edn")))
+                  (map #(.getPath %)))))))
+     urls)))
 
 (defn load-schema [schema-path]
   (if (.startsWith schema-path "schemas/")

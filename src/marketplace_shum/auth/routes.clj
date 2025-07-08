@@ -1,5 +1,5 @@
 (ns marketplace-shum.auth.routes
-  (:require 
+  (:require
    [marketplace-shum.auth.handler :as auth-handler]
    [marketplace-shum.auth.domain :as auth-domin]))
 
@@ -21,9 +21,9 @@
                         401 {:body ::auth-domin/error-response}}
             :handler #'auth-handler/login-handler}}]
 
-   ["/confirm/:token"
+   ["/confirm"
     {:get {:summary "confirm email with token"
-           :parameters {:path {:token string?}}
+           :parameters {:query {:token ::auth-domin/token}}
            :responses {200 {:body ::auth-domin/register-response}
                        400 {:body ::auth-domin/error-response}}
            :handler #'auth-handler/confirm-email-handler}}]])

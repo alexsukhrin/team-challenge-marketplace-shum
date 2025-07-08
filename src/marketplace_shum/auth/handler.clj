@@ -20,7 +20,7 @@
 
       (not (:user/email-confirmed? user))
       (let [{:keys [email-confirmation-token]} (user-repo/update-confirmation-token! db (:db/id user))]
-        
+
         (email-service/send-confirmation-email email email-confirmation-token (:user/first-name user))
         {:status 200
          :body {:message "Confirmation email re-sent."}})
@@ -36,7 +36,19 @@
      :body {:message "Login successful"
             :token "jwt-token-here"}}))
 
-(defn confirm-email-handler [request]
-  (let [token (get-in request [:path-params :token])]
-    {:status 200
-     :body {:message "Email confirmed successfully"}}))
+(defn confirm-email-handler [{{:keys [token]} :path-params}]
+  (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]
+    (let [expiry (:user/email-confirmation-expiry user)
+          now (java.util.Date.)]
+      (cond
+        (:user/email-confirmed? user)
+        {:status 200 :body {:message "Email already confirmed"}}
+
+        (and expiry (.before expiry now))
+        {:status 410 :body {:message "Confirmation token expired"}}
+
+        :else
+        (do
+          (user-repo/set-email-confirmed! db (:user/id user) true)
+          {:status 200 :body {:message "Email confirmed successfully"}})))
+    {:status 404 :body {:message "Token not found"}}))

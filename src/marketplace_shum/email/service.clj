@@ -26,7 +26,7 @@
         bucket (get-in config/*config* [:s3 :bucket])
         header-img (s3/generate-url bucket "email/email.png")
         confirmation-link (str base-url ":" port "/api/v1/auth/confirm?token=" token)
-        html-body (render-template "templates/email.html" {"user" user-name 
+        html-body (render-template "templates/email.html" {"user" user-name
                                                            "link" confirmation-link
                                                            "header-img" header-img})]
     {:from (get-in config/*config* [:email :from])
