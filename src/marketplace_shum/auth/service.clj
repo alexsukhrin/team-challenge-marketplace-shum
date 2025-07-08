@@ -26,57 +26,39 @@
 (defn- create-token [claims]
   (jwt/sign claims (secret) {:alg :hs256}))
 
+(defn create-token-for-user
+  [{:keys [user-id type lifetime]}]
+  (let [jti (str (java.util.UUID/randomUUID))
+        token (create-token {:type type
+                             :user-id user-id
+                             :jti jti
+                             :exp (t/plus (t/now) lifetime)})]
+    (when (= type :refresh)
+      (user-repo/set-refresh-token! db user-id jti))
+    token))
+
 (defn create-access-token
   "Creates a short-lived access token."
-  [user]
-  (let [jti (str (java.util.UUID/randomUUID))]
-    (create-token {:type :access
-                   :user-id (:id user)
-                   :jti jti
-                   :exp (t/plus (t/now) access-token-lifetime)})))
+  [user-id]
+  (create-token-for-user {:user-id user-id
+                          :type :access
+                          :lifetime access-token-lifetime}))
 
 (defn create-refresh-token
   "Creates a long-lived refresh token."
-  [user]
-  (let [jti (random-uuid)
-        token (create-token {:type :refresh
-                             :user-id (:id user)
-                             :jti jti
-                             :exp (t/plus (t/now) refresh-token-lifetime)})]
-    (user-repo/set-refresh-token! db (:user/id user) jti)
-    token))
+  [user-id]
+  (create-token-for-user {:user-id user-id
+                          :type :refresh
+                          :lifetime refresh-token-lifetime}))
 
-;; ;; ;;; Token Verification
-;; (defn- verify-token [token]
-;;   (try
-;;     (jwt/unsign token (secret))
-;;     (catch Exception _ nil)))
+(defn verify-token-of-type [token expected-type]
+  (let [claims (jwt/unsign token (secret) {:alg :hs256})]
+    (when (and (= (-> claims :type keyword) expected-type)
+               (> (:exp claims) (.getEpochSecond (java.time.Instant/now))))
+      claims)))
 
-;; (defn verify-access-token
-;;   "Verifies an access token and checks if it's blacklisted."
-;;   [token]
-;;   (when-let [claims (verify-token token)]
-;;     (let [jti (:jti claims)]
-;;       (when (some? jti)
-;;         (when-not (auth-repo/is-token-blacklisted? jti)
-;;           claims)))))
+(defn verify-access-token [token]
+  (verify-token-of-type token :access))
 
-;; (defn verify-refresh-token
-;;   "Verifies a refresh token and checks if it has been revoked."
-;;   [token]
-;;   (when-let [claims (verify-token token)]
-;;     (let [jti (:jti claims)]
-;;       (when (some? jti)
-;;         (when-not (auth-repo/is-refresh-token-revoked? jti)
-;;           claims)))))
-
-;; ;;; Token Revocation
-;; (defn blacklist-token!
-;;   "Adds an access token's JTI to the blacklist."
-;;   [jti]
-;;   (auth-repo/add-token-to-blacklist! jti))
-
-;; (defn revoke-refresh-token!
-;;   "Adds a refresh token's JTI to the revoked list."
-;;   [jti]
-;;   (auth-repo/revoke-refresh-token! jti))
+(defn verify-refresh-token [token]
+  (verify-token-of-type token :refresh))

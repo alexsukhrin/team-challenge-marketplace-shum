@@ -48,7 +48,7 @@
   (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] :user/email-confirmed? confirmed?]]}))
 
 (defn set-refresh-token! [conn id refresh-token]
-  (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] 
+  (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))]
                                :user/refresh-token (if (uuid? refresh-token) refresh-token (java.util.UUID/fromString refresh-token))]]}))
 
 (defn update-confirmation-token! [conn user-id]

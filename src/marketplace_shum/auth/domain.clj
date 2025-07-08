@@ -16,3 +16,4 @@
 (s/def ::error-response (s/keys :req-un [::error ::message]))
 (s/def ::login-params (s/keys :req-un [::email ::password]))
 (s/def ::login-response (s/keys :req-un [::access-token ::refresh-token]))
+(s/def ::refresh-params (s/keys :req-un [::refresh-token]))

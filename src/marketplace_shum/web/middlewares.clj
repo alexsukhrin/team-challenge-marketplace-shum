@@ -14,7 +14,8 @@
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.exception :as exception]
    [reitit.ring.middleware.multipart :as multipart]
-   [reitit.ring.middleware.parameters :as parameters]))
+   [reitit.ring.middleware.parameters :as parameters]
+   [marketplace-shum.auth.service :as auth-service]))
 
 (defn wrap-authentication
   "Middleware to authenticate a request using a JWT in the Authorization header."
@@ -39,8 +40,7 @@
             (response/status 401))
 
         :else
-        (if-let [claims "" ;;(auth-service/verify-access-token token)
-                 ]
+        (if-let [claims (auth-service/verify-access-token token)]
           (handler (assoc request :identity claims))
           (-> (response/response {:message "Unauthorized"})
               (response/status 401)))))))
