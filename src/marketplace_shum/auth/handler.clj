@@ -30,11 +30,19 @@
        :body {:error "conflict"
               :message "A user with this email already exists."}})))
 
-(defn login-handler [request]
-  (let [login-data (:body request)]
-    {:status 200
-     :body {:message "Login successful"
-            :token "jwt-token-here"}}))
+(def dummy-hash
+  "$2a$10$7EqJtq98hPqEX7fNZaFWoO5e5p8Y8QZC1Z2ZQFQFQFQFQFQFQFQFQ")
+
+(defn login-handler [{{{:keys [email password]} :body} :parameters}]
+  (let [user (user-repo/find-user-by-email db email)
+        password-hash (cond
+                        (and user (:user/email-confirmed? user)) (:user/password user)
+                        :else dummy-hash)]
+    
+    (when (and user (:user/email-confirmed? user) (auth-service/verify-password password password-hash))
+      {:status 200
+       :body {:access-token (auth-service/create-access-token user)
+              :refresh-token (auth-service/create-refresh-token user)}})))
 
 (defn confirm-email-handler [{{:keys [token]} :query-params}]
   (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]

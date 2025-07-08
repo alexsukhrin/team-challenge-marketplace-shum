@@ -44,9 +44,12 @@
 (defn find-user-by-email-confirmation-token [conn token]
   (find-user-by-attr conn :user/email-confirmation-token (if (uuid? token) token (java.util.UUID/fromString token))))
 
-(defn set-email-confirmed!
-  [conn id confirmed?]
+(defn set-email-confirmed! [conn id confirmed?]
   (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] :user/email-confirmed? confirmed?]]}))
+
+(defn set-refresh-token! [conn id refresh-token]
+  (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] 
+                               :user/refresh-token (if (uuid? refresh-token) refresh-token (java.util.UUID/fromString refresh-token))]]}))
 
 (defn update-confirmation-token! [conn user-id]
   (let [token (random-uuid)

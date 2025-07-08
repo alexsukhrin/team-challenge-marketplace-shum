@@ -43,4 +43,9 @@
  {:db/ident       :user/created-at
   :db/valueType   :db.type/instant
   :db/cardinality :db.cardinality/one
-  :db/doc         "User creation timestamp"}]
+  :db/doc         "User creation timestamp"}
+ 
+ {:db/ident       :user/refresh-token
+  :db/valueType   :db.type/uuid
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A token refresh."}]

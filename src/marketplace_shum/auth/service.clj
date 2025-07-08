@@ -3,51 +3,50 @@
    [buddy.hashers :as hashers]
    [buddy.sign.jwt :as jwt]
    [clj-time.core :as t]
-   [marketplace-shum.users.repository :as user-repo]
-   [marketplace-shum.infra.db :refer [db]]))
+   [marketplace-shum.infra.config :as config]
+   [marketplace-shum.infra.db :refer [db]]
+   [marketplace-shum.users.repository :as user-repo]))
 
-;; (defn secret []
-;;   (:jwt-secret config/*config*))
+(defn secret []
+  (:jwt-secret config/*config*))
 
 (def ^:private access-token-lifetime (t/minutes 15))
 (def ^:private refresh-token-lifetime (t/days 7))
 
-;;; Password Hashing
 (defn hash-password
   "Hashes a password using bcrypt."
   [password]
   (hashers/derive password))
 
-;; (defn verify-password
-;;   "Checks if a password matches its hash."
-;;   [password-to-check hashed-password]
-;;   (hashers/check password-to-check hashed-password))
+(defn verify-password
+  "Checks if a password matches its hash."
+  [password-to-check hashed-password]
+  (hashers/check password-to-check hashed-password))
 
-;; ;;; Token Creation
-;; (defn- create-token [claims]
-;;   (jwt/sign claims (secret) {:alg :hs256}))
+(defn- create-token [claims]
+  (jwt/sign claims (secret) {:alg :hs256}))
 
-;; (defn create-access-token
-;;   "Creates a short-lived access token."
-;;   [user]
-;;   (let [jti (str (java.util.UUID/randomUUID))]
-;;     (create-token {:type :access
-;;                    :user-id (:id user)
-;;                    :jti jti
-;;                    :exp (t/plus (t/now) access-token-lifetime)})))
+(defn create-access-token
+  "Creates a short-lived access token."
+  [user]
+  (let [jti (str (java.util.UUID/randomUUID))]
+    (create-token {:type :access
+                   :user-id (:id user)
+                   :jti jti
+                   :exp (t/plus (t/now) access-token-lifetime)})))
 
-;; (defn create-refresh-token
-;;   "Creates a long-lived refresh token."
-;;   [user]
-;;   (let [jti (str (java.util.UUID/randomUUID))
-;;         token (create-token {:type :refresh
-;;                              :user-id (:id user)
-;;                              :jti jti
-;;                              :exp (t/plus (t/now) refresh-token-lifetime)})]
-;;     (auth-repo/add-refresh-token! (:users/id user) jti)
-;;     token))
+(defn create-refresh-token
+  "Creates a long-lived refresh token."
+  [user]
+  (let [jti (random-uuid)
+        token (create-token {:type :refresh
+                             :user-id (:id user)
+                             :jti jti
+                             :exp (t/plus (t/now) refresh-token-lifetime)})]
+    (user-repo/set-refresh-token! db (:user/id user) jti)
+    token))
 
-;; ;;; Token Verification
+;; ;; ;;; Token Verification
 ;; (defn- verify-token [token]
 ;;   (try
 ;;     (jwt/unsign token (secret))
