@@ -36,7 +36,7 @@
      :body {:message "Login successful"
             :token "jwt-token-here"}}))
 
-(defn confirm-email-handler [{{:keys [token]} :path-params}]
+(defn confirm-email-handler [{{:keys [token]} :query-params}]
   (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]
     (let [expiry (:user/email-confirmation-expiry user)
           now (java.util.Date.)]

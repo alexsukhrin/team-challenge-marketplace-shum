@@ -42,7 +42,7 @@
   (find-user-by-attr conn :user/email email))
 
 (defn find-user-by-email-confirmation-token [conn token]
-  (find-user-by-attr conn :user/email-confirmation-token token))
+  (find-user-by-attr conn :user/email-confirmation-token (if (uuid? token) token (java.util.UUID/fromString token))))
 
 (defn set-email-confirmed!
   [conn id confirmed?]
