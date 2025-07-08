@@ -1,12 +1,15 @@
-(ns marketplace-shum.aws.s3
+(ns marketplace-shum.aws.service
   (:require [cognitect.aws.client.api :as aws]
-            [marketplace-shum.app :as client]))
+            [mount.core :refer [defstate]]
+            [marketplace-shum.infra.config :as config]))
 
-(defstate s3 :start (aws/client {:api :s3 :region (get-in config [:s3 :region])}))
+(defstate client-s3 
+  :start (aws/client {:api :s3 
+                      :region (get-in config/*config* [:s3 :region])}))
 
 (defn upload-file!
   [bucket key file-bytes content-type]
-  (aws/invoke client/s3
+  (aws/invoke client-s3
               {:op :PutObject
                :request {:Bucket bucket
                          :Key key
@@ -15,7 +18,7 @@
 
 (defn delete-file!
   [bucket key]
-  (aws/invoke client/s3
+  (aws/invoke client-s3
               {:op :DeleteObject
                :request {:Bucket bucket
                          :Key key}}))

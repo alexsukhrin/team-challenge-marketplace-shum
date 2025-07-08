@@ -1,5 +1,6 @@
 {:web-server 
  {:port #long #env PORT
+  :port-out #long #env PORT_OUT
   :host #env HOST}
  :jwt-secret #env JWT_SECRET
  :email {:host   #env EMAIL_HOST
