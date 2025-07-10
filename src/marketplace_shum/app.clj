@@ -21,5 +21,7 @@
   (mount/start #'m/migratus)
   (mount/start #'s/http-server)
 
+  (mount/stop)
+
   ;; stats 
   (mount/running-states))

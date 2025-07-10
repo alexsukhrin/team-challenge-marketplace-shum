@@ -5,7 +5,7 @@
    :body {:message "pong"}})
 
 (def route
-  ["/health"
+  ["/ping"
    {:tags ["health"]}
 
    ["" {:get {:summary "health check system"

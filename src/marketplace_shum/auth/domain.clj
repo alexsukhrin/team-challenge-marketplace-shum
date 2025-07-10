@@ -1,11 +1,15 @@
 (ns marketplace-shum.auth.domain
   (:require
-   [clojure.spec.alpha :as s]))
+   [clojure.spec.alpha :as s]
+   [clojure.string :as str]))
 
-(s/def ::email string?)
-(s/def ::password string?)
-(s/def ::first-name string?)
-(s/def ::last-name string?)
+(defn not-blank? [s]
+  (not (str/blank? s)))
+
+(s/def ::email (s/and string? not-blank?))
+(s/def ::password (s/and string? not-blank?))
+(s/def ::first-name (s/and string? not-blank?))
+(s/def ::last-name (s/and string? not-blank?))
 (s/def ::message string?)
 (s/def ::error string?)
 (s/def ::token string?)

@@ -30,13 +30,13 @@
            :handler #'auth-handler/confirm-email-handler}}]
 
    ["/logout"
-    {:post {:summary "Logout user"
+    {:post {:summary "logout user"
             :middleware [middleware/wrap-authentication]
             :responses {200 {:body {:message string?}}
                         401 {:body {:error string?}}}
             :handler #'auth-handler/logout-handler}}]
 
    ["/refresh"
-    {:post {:summary "Get a new token pair using a refresh token"
+    {:post {:summary "get a new token pair using a refresh token"
             :parameters {:body ::auth-domain/refresh-params}
             :handler #'auth-handler/refresh-token-handler}}]])
