@@ -1,0 +1,13 @@
+[
+  {:db/ident :ad-category/shoes :ad-category/name "Взуття" :ad-category/photo "shoes.jpg"}
+  {:db/ident :ad-category/sport :ad-category/name "Спорт і активний відпочинок" :ad-category/photo "sport.jpg"}
+  {:db/ident :ad-category/electronics :ad-category/name "Електроніка" :ad-category/photo "electronics.jpg"}
+  {:db/ident :ad-category/clothes :ad-category/name "Одяг" :ad-category/photo "clothes.jpg"}
+  {:db/ident :ad-category/home :ad-category/name "Товари для дому" :ad-category/photo "home.jpg"}
+  {:db/ident :ad-category/books :ad-category/name "Книги" :ad-category/photo "books.jpg"}
+  {:db/ident :ad-category/garden :ad-category/name "Сад і город" :ad-category/photo "garden.jpg"}
+  {:db/ident :ad-category/tech :ad-category/name "Техніка" :ad-category/photo "tech.jpg"}
+  {:db/ident :ad-category/auto :ad-category/name "Автотовари" :ad-category/photo "auto.jpg"}
+  {:db/ident :ad-category/stationery :ad-category/name "Канцелярія" :ad-category/photo "stationery.jpg"}
+  {:db/ident :ad-category/children :ad-category/name "Товари для дітей" :ad-category/photo "children.jpg"}
+]

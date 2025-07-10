@@ -1,0 +1,117 @@
+[
+ {:db/ident       :ad/id
+  :db/valueType   :db.type/uuid
+  :db/cardinality :db.cardinality/one
+  :db/unique      :db.unique/identity}
+
+ {:db/ident       :ad/title
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad/description
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad/price
+  :db/valueType   :db.type/bigdec
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad/user
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad/created-at
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Date and time the ad was created"}
+
+ {:db/ident       :ad/quantity
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one}
+
+ ;; Категорія
+ {:db/ident       :ad-category/name
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad-category/photo
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ ;; Зв'язок оголошення-категорія (many-to-many)
+ {:db/ident       :ad/categories
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many}
+
+ ;; Характеристика
+ {:db/ident       :ad-characteristic/name
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad-characteristic/description
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ ;; Стан
+ {:db/ident       :ad-condition/name
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ ;; Фото
+ {:db/ident       :ad/photos
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/isComponent true}
+
+ {:db/ident       :ad-photo/url
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad-photo/position
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one}
+
+ ;; Матеріали взуття
+ {:db/ident :ad/shoe-material :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Матеріали одягу
+ {:db/ident :ad/clothing-material :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип товару для дому
+ {:db/ident :ad/home-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Матеріал товару для дому
+ {:db/ident :ad/home-material :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Книги: жанри, палітурка, мова
+ {:db/ident :ad/book-genre :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+ {:db/ident :ad/book-cover :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+ {:db/ident :ad/book-language :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+
+ ;; Тип товару для саду
+ {:db/ident :ad/garden-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип товару техніка
+ {:db/ident :ad/electronics-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип автотовару
+ {:db/ident :ad/auto-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип товару канцелярія
+ {:db/ident :ad/stationery-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип активності
+ {:db/ident :ad/activity-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Тип товару для дітей
+ {:db/ident :ad/children-type :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Кольори
+ {:db/ident :ad/color :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+
+ ;; Стать
+ {:db/ident :ad/gender :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :ad/condition
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one}]

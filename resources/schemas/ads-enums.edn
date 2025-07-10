@@ -1,0 +1,141 @@
+[
+ ;; Матеріали взуття
+ {:db/ident :shoe-material/suede}
+ {:db/ident :shoe-material/nubuck}
+ {:db/ident :shoe-material/mesh}
+ {:db/ident :shoe-material/other}
+
+ ;; Матеріали одягу
+ {:db/ident :clothing-material/cotton}
+ {:db/ident :clothing-material/wool}
+ {:db/ident :clothing-material/linen}
+ {:db/ident :clothing-material/silk}
+ {:db/ident :clothing-material/polyester}
+ {:db/ident :clothing-material/nylon}
+ {:db/ident :clothing-material/acrylic}
+ {:db/ident :clothing-material/viscose}
+ {:db/ident :clothing-material/denim}
+ {:db/ident :clothing-material/other}
+
+ ;; Тип товару для дому
+ {:db/ident :home-type/dishes}
+ {:db/ident :home-type/textile}
+ {:db/ident :home-type/furniture}
+ {:db/ident :home-type/decor}
+ {:db/ident :home-type/lighting}
+ {:db/ident :home-type/other}
+
+ ;; Матеріал товару для дому
+ {:db/ident :home-material/wood}
+ {:db/ident :home-material/glass}
+ {:db/ident :home-material/ceramic}
+ {:db/ident :home-material/metal}
+ {:db/ident :home-material/fabric}
+ {:db/ident :home-material/plastic}
+ {:db/ident :home-material/other}
+
+ ;; Книги: жанри
+ {:db/ident :book-genre/fiction}
+ {:db/ident :book-genre/nonfiction}
+ {:db/ident :book-genre/children}
+ {:db/ident :book-genre/selfdev}
+ {:db/ident :book-genre/business}
+ {:db/ident :book-genre/history}
+ {:db/ident :book-genre/fantasy}
+ {:db/ident :book-genre/detective}
+ {:db/ident :book-genre/comics}
+ {:db/ident :book-genre/novel}
+
+ ;; Книги: палітурка
+ {:db/ident :book-cover/soft}
+ {:db/ident :book-cover/hard}
+
+ ;; Книги: мова
+ {:db/ident :book-language/uk}
+ {:db/ident :book-language/en}
+ {:db/ident :book-language/de}
+ {:db/ident :book-language/other}
+
+ ;; Тип товару для саду
+ {:db/ident :garden-type/tool}
+ {:db/ident :garden-type/equipment}
+ {:db/ident :garden-type/seeds}
+ {:db/ident :garden-type/fertilizer}
+ {:db/ident :garden-type/container}
+ {:db/ident :garden-type/furniture}
+ {:db/ident :garden-type/decor}
+ {:db/ident :garden-type/lighting}
+ {:db/ident :garden-type/fence}
+ {:db/ident :garden-type/other}
+
+ ;; Тип товару техніка
+ {:db/ident :electronics-type/phone}
+ {:db/ident :electronics-type/laptop}
+ {:db/ident :electronics-type/tablet}
+ {:db/ident :electronics-type/headphones}
+ {:db/ident :electronics-type/watch}
+ {:db/ident :electronics-type/camera}
+ {:db/ident :electronics-type/tv}
+ {:db/ident :electronics-type/fridge}
+ {:db/ident :electronics-type/dishwasher}
+ {:db/ident :electronics-type/console}
+ {:db/ident :electronics-type/washing-machine}
+ {:db/ident :electronics-type/speaker}
+ {:db/ident :electronics-type/sewing-machine}
+ {:db/ident :electronics-type/other}
+
+ ;; Тип автотовару
+ {:db/ident :auto-type/accessory}
+ {:db/ident :auto-type/part}
+ {:db/ident :auto-type/electronics}
+ {:db/ident :auto-type/oil}
+ {:db/ident :auto-type/care}
+ {:db/ident :auto-type/tyre}
+ {:db/ident :auto-type/disk}
+ {:db/ident :auto-type/other}
+
+ ;; Тип товару канцелярія
+ {:db/ident :stationery-type/writing}
+ {:db/ident :stationery-type/paper}
+ {:db/ident :stationery-type/organization}
+ {:db/ident :stationery-type/office}
+ {:db/ident :stationery-type/creativity}
+ {:db/ident :stationery-type/other}
+
+ ;; Тип активності
+ {:db/ident :activity-type/tourism}
+ {:db/ident :activity-type/water-sport}
+ {:db/ident :activity-type/cycling}
+ {:db/ident :activity-type/climbing}
+ {:db/ident :activity-type/picnic}
+ {:db/ident :activity-type/other}
+
+ ;; Тип товару для дітей
+ {:db/ident :children-type/clothing}
+ {:db/ident :children-type/shoes}
+ {:db/ident :children-type/toy}
+ {:db/ident :children-type/care}
+ {:db/ident :children-type/learning}
+ {:db/ident :children-type/other}
+
+ ;; Кольори
+ {:db/ident :color/white}
+ {:db/ident :color/black}
+ {:db/ident :color/grey}
+ {:db/ident :color/red}
+ {:db/ident :color/pink}
+ {:db/ident :color/blue}
+ {:db/ident :color/green}
+ {:db/ident :color/yellow}
+ {:db/ident :color/other}
+
+ ;; Стать
+ {:db/ident :gender/female}
+ {:db/ident :gender/male}
+ {:db/ident :gender/child}
+ {:db/ident :gender/unisex}
+
+ ;; Стан оголошення
+{:db/ident :ad-condition/new}
+{:db/ident :ad-condition/used}
+] 
