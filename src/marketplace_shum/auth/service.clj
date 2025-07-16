@@ -29,8 +29,11 @@
 (defn create-token-for-user
   [{:keys [user-id type lifetime]}]
   (let [jti (str (java.util.UUID/randomUUID))
+        user (user-repo/find-user-by-id db user-id)
+        roles (user-repo/user-role-names db user)
         token (create-token {:type type
                              :user-id user-id
+                             :roles roles
                              :jti jti
                              :exp (t/plus (t/now) lifetime)})]
     (when (= type :refresh)
@@ -62,3 +65,11 @@
 
 (defn verify-refresh-token [token]
   (verify-token-of-type token :refresh))
+
+(defn confirm-user! [db user-id]
+  (if-let [role-uuid (user-repo/find-role-uuid-by-name db "user")]
+    (do
+      (user-repo/set-email-confirmed! db user-id true)
+      (user-repo/add-role-to-user! db user-id role-uuid)
+      true)
+    false))

@@ -34,9 +34,6 @@
         ;; Http
         clj-http/clj-http {:mvn/version "3.12.3"}
 
-        ;; Migratus
-        migratus/migratus {:mvn/version "1.5.3"}
-
         ;; Selmer
         selmer/selmer {:mvn/version "1.12.62"}
 
