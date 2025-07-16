@@ -62,7 +62,8 @@
 
         :else
         (if (auth-service/confirm-user! db user-id)
-          {:status 200 :body {:message "Email confirmed successfully"}}
+          {:status 200 :body {:access-token (auth-service/create-access-token user-id)
+                              :refresh-token (auth-service/create-refresh-token user-id)}}
           {:status 500 :body {:message "Role 'user' not found. Contact support."}})))
     {:status 404 :body {:message "Token not found"}}))
 

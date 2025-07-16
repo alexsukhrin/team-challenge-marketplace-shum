@@ -25,7 +25,7 @@
    ["/confirm"
     {:get {:summary "confirm email with token"
            :parameters {:query {:token ::auth-domain/token}}
-           :responses {200 {:body ::auth-domain/register-response}
+           :responses {200 {:body ::auth-domain/login-response}
                        400 {:body ::auth-domain/error-response}}
            :handler #'auth-handler/confirm-email-handler}}]
 
