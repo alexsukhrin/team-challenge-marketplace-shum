@@ -26,12 +26,12 @@
 
 (defn swagger-ui []
   (swagger-ui/create-swagger-ui-handler
-    {:path "/"
-     :config {:validatorUrl nil
-              :urls [{:name "swagger" :url "swagger.json"}
-                     {:name "openapi" :url "openapi.json"}]
-              :urls.primaryName "openapi"
-              :operationsSorter "alpha"}}))
+   {:path "/"
+    :config {:validatorUrl nil
+             :urls [{:name "swagger" :url "swagger.json"}
+                    {:name "openapi" :url "openapi.json"}]
+             :urls.primaryName "openapi"
+             :operationsSorter "alpha"}}))
 
 (def v1-routes
   ["/api/v1"
@@ -42,14 +42,14 @@
 (def make-routes
   (ring/ring-handler
    (ring/router
-    [["" 
+    [[""
       {:middleware common-middleware}
       swagger
       openapi
       health/route
       v1-routes]]
     middleware)
-   (ring/routes 
+   (ring/routes
     (swagger-ui)
     (ring/create-resource-handler {:path "/"})
     (ring/redirect-trailing-slash-handler {:method :strip})

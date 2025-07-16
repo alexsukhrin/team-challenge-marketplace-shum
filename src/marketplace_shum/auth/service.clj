@@ -29,8 +29,11 @@
 (defn create-token-for-user
   [{:keys [user-id type lifetime]}]
   (let [jti (str (java.util.UUID/randomUUID))
+        user (user-repo/find-user-by-id db user-id)
+        roles (user-repo/user-role-names db user)
         token (create-token {:type type
                              :user-id user-id
+                             :roles roles
                              :jti jti
                              :exp (t/plus (t/now) lifetime)})]
     (when (= type :refresh)

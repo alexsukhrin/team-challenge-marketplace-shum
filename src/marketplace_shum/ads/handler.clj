@@ -40,7 +40,7 @@
                  [(keyword "ad" (name k)) v])))
         ad))
 
-(defn create-ad [{{:keys [multipart]} :parameters}] 
+(defn create-ad [{{:keys [multipart]} :parameters}]
   (println "[DEBUG] multipart:" multipart)
   (let [photos (or (:ad/photos multipart) [])
         bucket (get-in config/*config* [:s3 :bucket])

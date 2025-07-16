@@ -60,8 +60,10 @@
         {:status 410 :body {:message "Confirmation token expired"}}
 
         :else
-        (do
-          (user-repo/set-email-confirmed! db (:user/id user) true)
+        (let [user-id (:user/id user)
+              role-uuid (user-repo/find-role-uuid-by-name db "user")]
+          (user-repo/set-email-confirmed! db user-id true)
+          (user-repo/add-role-to-user! db user-id role-uuid)
           {:status 200 :body {:message "Email confirmed successfully"}})))
     {:status 404 :body {:message "Token not found"}}))
 

@@ -48,4 +48,16 @@
  {:db/ident       :user/refresh-token
   :db/valueType   :db.type/uuid
   :db/cardinality :db.cardinality/one
-  :db/doc         "A token refresh."}]
+  :db/doc         "A token refresh."}
+
+{:db/ident :user/roles
+ :db/valueType :db.type/ref
+ :db/cardinality :db.cardinality/many
+ :db/doc "Roles user"}
+
+{:db/ident :user/permissions
+ :db/valueType :db.type/ref
+ :db/cardinality :db.cardinality/many
+ :db/doc "Permissions user"}
+
+]

@@ -1,7 +1,6 @@
 (ns marketplace-shum.users.repository
   (:require
    [datomic.client.api :as d]
-   [marketplace-shum.infra.db :refer [db]]
    [clj-time.core :as t]))
 
 (defn generate-expiry []
@@ -28,6 +27,12 @@
   [conn id]
   (d/pull (d/db conn) '[*] [:user/id (if (uuid? id) id (java.util.UUID/fromString id))]))
 
+(defn user-role-names [conn user]
+  (let [db (d/db conn)
+        role-ids (:user/roles user)
+        roles (map #(d/pull db [:role/name] (:db/id %)) role-ids)]
+    (map :role/name roles)))
+
 (defn find-user-by-attr
   [conn attr value]
   (let [result (d/q '[:find ?e
@@ -47,6 +52,23 @@
 (defn set-email-confirmed! [conn id confirmed?]
   (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] :user/email-confirmed? confirmed?]]}))
 
+(defn add-role-to-user! [conn user-id role-uuid]
+  (let [user-id (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))
+        role-eid (ffirst (d/q '[:find ?e
+                                :in $ ?role-id
+                                :where [?e :role/id ?role-id]]
+                              (d/db conn) role-uuid))]
+    (when role-eid
+      (d/transact conn {:tx-data [[:db/add [:user/id user-id] :user/roles role-eid]]}))))
+
+(defn find-role-uuid-by-name [conn role-name]
+  (ffirst (d/q '[:find ?id
+                 :in $ ?name
+                 :where
+                 [?e :role/name ?name]
+                 [?e :role/id ?id]]
+               (d/db conn) role-name)))
+
 (defn set-refresh-token! [conn id refresh-token]
   (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))]
                                :user/refresh-token (if (uuid? refresh-token) refresh-token (java.util.UUID/fromString refresh-token))]]}))
@@ -58,25 +80,3 @@
                                  :user/email-confirmation-token token
                                  :user/email-confirmation-token-expires-at expiry}]})
     {:email-confirmation-token token}))
-
-(comment
-
-  (d/q '[:find ?e ?ident ?value-type ?value-type-name
-         :where [?e :db/ident ?ident]
-         [?e :db/valueType ?value-type]
-         [?value-type :db/ident ?value-type-name]
-         [(namespace ?ident) ?ns]
-         [(= ?ns "user")]]
-       (d/db db))
-
-  (d/transact db [[:db/retractEntity :user/email-confirmation-token]])
-
-  (d/transact db [{:db/ident :user/email-confirmation-token
-                   :db/valueType :db.type/uuid
-                   :db/cardinality :db.cardinality/one
-                   :db/doc "A token sent to the user to confirm their email address."}])
-
-  (def user-result (create-user! db {:email "alexandrvirtual@gmail.com"
-                                     :password "password123"
-                                     :first-name "Alexandr"
-                                     :last-name "Sukhryn"})))
