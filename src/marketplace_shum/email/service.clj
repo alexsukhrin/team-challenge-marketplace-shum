@@ -22,10 +22,9 @@
 
 (defn- create-confirmation-email [to token user-name]
   (let [base-url (get-in config/*config* [:web-server :host])
-        port (get-in config/*config* [:web-server :port-out])
         bucket (get-in config/*config* [:s3 :bucket])
         header-img (s3/generate-url bucket "email/email.png")
-        confirmation-link (str base-url ":" port "/api/v1/auth/confirm?token=" token)
+        confirmation-link (str base-url "/confirm?token=" token)
         html-body (render-template "templates/email.html" {"user" user-name
                                                            "link" confirmation-link
                                                            "header-img" header-img})]
