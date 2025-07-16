@@ -65,3 +65,11 @@
 
 (defn verify-refresh-token [token]
   (verify-token-of-type token :refresh))
+
+(defn confirm-user! [db user-id]
+  (if-let [role-uuid (user-repo/find-role-uuid-by-name db "user")]
+    (do
+      (user-repo/set-email-confirmed! db user-id true)
+      (user-repo/add-role-to-user! db user-id role-uuid)
+      true)
+    false))

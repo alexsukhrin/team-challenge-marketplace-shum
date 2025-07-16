@@ -50,21 +50,20 @@
 
 (defn confirm-email-handler [{{:keys [token]} :query-params}]
   (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]
-    (let [expiry (:user/email-confirmation-expiry user)
-          now (java.util.Date.)]
+    (let [expires-at (:user/email-confirmation-expiry user)
+          now (java.util.Date.)
+          user-id (:user/id user)]
       (cond
         (:user/email-confirmed? user)
         {:status 200 :body {:message "Email already confirmed"}}
 
-        (and expiry (.before expiry now))
+        (and expires-at (.before expires-at now))
         {:status 410 :body {:message "Confirmation token expired"}}
 
         :else
-        (let [user-id (:user/id user)
-              role-uuid (user-repo/find-role-uuid-by-name db "user")]
-          (user-repo/set-email-confirmed! db user-id true)
-          (user-repo/add-role-to-user! db user-id role-uuid)
-          {:status 200 :body {:message "Email confirmed successfully"}})))
+        (if (auth-service/confirm-user! db user-id)
+          {:status 200 :body {:message "Email confirmed successfully"}}
+          {:status 500 :body {:message "Role 'user' not found. Contact support."}})))
     {:status 404 :body {:message "Token not found"}}))
 
 (defn logout-handler [_]
