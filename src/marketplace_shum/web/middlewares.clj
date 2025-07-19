@@ -41,7 +41,7 @@
 
         :else
         (if-let [claims (auth-service/verify-access-token token)]
-          (handler (assoc request :identity claims))
+          (handler (assoc request :user claims))
           (-> (response/response {:message "Unauthorized"})
               (response/status 401)))))))
 

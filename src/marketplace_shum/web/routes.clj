@@ -8,28 +8,29 @@
    [marketplace-shum.web.middlewares :refer [middleware api-middleware common-middleware]]
    [marketplace-shum.health.handler :as health]
    [marketplace-shum.auth.routes :as auth-routes]
-   [marketplace-shum.ads.routes :as ads-routes]))
+   [marketplace-shum.ads.routes :as ads-routes]
+   [marketplace-shum.users.routes :as user-routes]))
 
 (def swagger
   ["/swagger.json"
    {:get {:no-doc true
-          :swagger {:info {:title "marketplace shum api"}}
+          :swagger {:info {:title "marketplace shum api"
+                           :description "swagger api docs"
+                           :version "0.0.1"}
+                    :securityDefinitions {:apiAuth {:type :apiKey
+                                                       :in :header
+                                                       :name "authorization"}}
+                    :tags [{:name "auth", :description "registration and authorization routes api"} 
+                           {:name "users", :description "create users routes api"} 
+                           {:name "ads", :description "products and categories routes api"} 
+                           {:name "health", :description "health check status server api"}]}
           :handler (swagger/create-swagger-handler)}}])
-
-(def openapi
-  ["/openapi.json"
-   {:get {:no-doc true
-          :openapi {:info {:title "marketplace shum api"
-                           :description "openapi3-docs with reitit-http"
-                           :version "0.0.1"}}
-          :handler (openapi/create-openapi-handler)}}])
 
 (defn swagger-ui []
   (swagger-ui/create-swagger-ui-handler
    {:path "/"
     :config {:validatorUrl nil
-             :urls [{:name "swagger" :url "swagger.json"}
-                    {:name "openapi" :url "openapi.json"}]
+             :urls [{:name "swagger" :url "swagger.json"}]
              :urls.primaryName "openapi"
              :operationsSorter "alpha"}}))
 
@@ -37,7 +38,8 @@
   ["/api/v1"
    {:middleware api-middleware}
    auth-routes/routes
-   ads-routes/routes])
+   ads-routes/routes
+   user-routes/routes])
 
 (def make-routes
   (ring/ring-handler
@@ -45,7 +47,6 @@
     [[""
       {:middleware common-middleware}
       swagger
-      openapi
       health/route
       v1-routes]]
     middleware)

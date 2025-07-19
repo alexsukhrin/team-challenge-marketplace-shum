@@ -5,7 +5,8 @@
    [clj-time.core :as t]
    [marketplace-shum.infra.config :as config]
    [marketplace-shum.infra.db :refer [db]]
-   [marketplace-shum.users.repository :as user-repo]))
+   [marketplace-shum.users.repository :as user-repo]
+   [marketplace-shum.auth.repository :as auth-repo]))
 
 (defn secret []
   (:jwt-secret config/*config*))
@@ -73,3 +74,10 @@
       (user-repo/add-role-to-user! db user-id role-uuid)
       true)
     false))
+
+(defn generate-otp []
+  (format "%06d" (rand-int 1000000)))
+
+
+(defn set-otp! [user-id otp]
+  (auth-repo/set-otp! db user-id otp))

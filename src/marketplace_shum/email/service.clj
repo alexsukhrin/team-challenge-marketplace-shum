@@ -20,14 +20,18 @@
 (defn- render-template [template-path params]
   (selmer/render (slurp (io/resource template-path)) params))
 
+(defn- get-header-img [path]
+  (let [host (get-in config/*config* [:web-server :host])
+        port (get-in config/*config* [:web-server :port])]
+    (str host ":" port path)))
+
 (defn- create-confirmation-email [to token user-name]
   (let [base-url (get-in config/*config* [:web-server :host])
-        bucket (get-in config/*config* [:s3 :bucket])
-        header-img (s3/generate-url bucket "email/email.png")
+        header-img (get-header-img "/email/email.png")
         confirmation-link (str base-url "/confirm?token=" token)
-        html-body (render-template "templates/email.html" {"user" user-name
-                                                           "link" confirmation-link
-                                                           "header-img" header-img})]
+        html-body (render-template "templates/confirm.html" {"user" user-name
+                                                             "link" confirmation-link
+                                                             "header-img" header-img})]
     {:from (get-in config/*config* [:email :from])
      :to to
      :subject "Please confirm your email address"
@@ -42,6 +46,27 @@
     (send-off email-agent (fn [_] (do-send-message email-config email-message)))
     (println "Queued confirmation email for" to)))
 
+(defn- create-otp-email [to otp user-name]
+  (let [header-img (get-header-img "/email/reset.png")
+        shum (get-header-img "/email/shum.png")
+        html-body (render-template "templates/otp.html" {"shum" shum
+                                                         "name" user-name
+                                                         "otp" otp
+                                                         "reset" header-img})]
+    {:from (get-in config/*config* [:email :from])
+     :to to
+     :subject "Please reset your password"
+     :body [{:type "text/html; charset=utf-8"
+             :content html-body}]}))
+
+(defn send-otp-email
+  "Queues a confirmation email to be sent asynchronously."
+  [to otp user-name]
+  (let [email-config (get config/*config* :email)
+        email-message (create-otp-email to otp user-name)]
+    (send-off email-agent (fn [_] (do-send-message email-config email-message)))
+    (println "Queued confirmation email for" to)))
+
 (comment
   (def to "alexandrvirtual@gmail.com")
   (def token "161a3c65-5e9f-44c1-841f-63c237600bab")
@@ -50,5 +75,9 @@
   (def email-message (create-confirmation-email to token user-name))
   (postal/send-message email-config email-message)
   (str "base-url" ":" 3344 "/api/v1/auth/confirm-email?token=" (random-uuid))
-
-  (send-confirmation-email to (random-uuid) user-name))
+  (render-template "templates/otp.html" {"shum" "shum"
+                                         "name" user-name
+                                         "otp" "otp"
+                                         "reset" "header-img"})
+  (send-confirmation-email to (random-uuid) user-name)
+  (send-otp-email to (random-uuid) user-name))
