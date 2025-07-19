@@ -1,5 +1,5 @@
 (ns marketplace-shum.users.handler
-  (:require 
+  (:require
    [marketplace-shum.users.service :as user-service]))
 
 (defn favorite-categories-handler [{:keys [body-params user]}]

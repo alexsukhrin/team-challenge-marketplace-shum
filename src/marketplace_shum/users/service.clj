@@ -1,5 +1,5 @@
 (ns marketplace-shum.users.service
-  (:require 
+  (:require
    [marketplace-shum.users.repository :as user-repo]
    [marketplace-shum.infra.db :refer [db]]))
 

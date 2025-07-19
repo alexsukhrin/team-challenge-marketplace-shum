@@ -1,8 +1,7 @@
 (ns marketplace-shum.users.routes
-  (:require 
+  (:require
    [marketplace-shum.users.handler :as user-handler]
    [marketplace-shum.web.middlewares :as middleware]))
-
 
 (def routes
   ["/users"

@@ -1,10 +1,10 @@
 (ns marketplace-shum.auth.repository
-  (:require 
+  (:require
    [datomic.client.api :as d]))
 
 (defn generate-expiry []
   (java.util.Date/from
-    (.plusSeconds (java.time.Instant/now) (* 10 60))))
+   (.plusSeconds (java.time.Instant/now) (* 10 60))))
 
 (defn otp-not-expired? [otp-expires-at]
   (let [now (java.util.Date.)]
@@ -15,11 +15,3 @@
         expiry (generate-expiry)]
     (d/transact conn {:tx-data [[:db/add user-eid :user/otp otp]
                                 [:db/add user-eid :user/otp-expires-at expiry]]})))
-
-(comment
-
-  (require '[marketplace-shum.infra.db :refer [db]])
-  (require '[marketplace-shum.users.repository :as user-repo])
-
-
-  )

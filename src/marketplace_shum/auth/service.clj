@@ -78,6 +78,5 @@
 (defn generate-otp []
   (format "%06d" (rand-int 1000000)))
 
-
 (defn set-otp! [user-id otp]
   (auth-repo/set-otp! db user-id otp))

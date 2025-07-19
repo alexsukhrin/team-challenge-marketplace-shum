@@ -18,11 +18,11 @@
                            :description "swagger api docs"
                            :version "0.0.1"}
                     :securityDefinitions {:apiAuth {:type :apiKey
-                                                       :in :header
-                                                       :name "authorization"}}
-                    :tags [{:name "auth", :description "registration and authorization routes api"} 
-                           {:name "users", :description "create users routes api"} 
-                           {:name "ads", :description "products and categories routes api"} 
+                                                    :in :header
+                                                    :name "authorization"}}
+                    :tags [{:name "auth", :description "registration and authorization routes api"}
+                           {:name "users", :description "create users routes api"}
+                           {:name "ads", :description "products and categories routes api"}
                            {:name "health", :description "health check status server api"}]}
           :handler (swagger/create-swagger-handler)}}])
 

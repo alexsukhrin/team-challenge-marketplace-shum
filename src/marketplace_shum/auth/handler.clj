@@ -18,7 +18,7 @@
         (email-service/send-confirmation-email email email-confirmation-token first-name)
         {:status 201
          :body {:access-token (auth-service/create-access-token user-id)
-              :refresh-token (auth-service/create-refresh-token user-id)}})
+                :refresh-token (auth-service/create-refresh-token user-id)}})
 
       (not (:user/email-confirmed? user))
       (let [{:keys [email-confirmation-token]} (user-repo/update-confirmation-token! db (:db/id user))]
@@ -35,17 +35,17 @@
 (defn login-handler [{{{:keys [email password]} :body} :parameters}]
   (if-let [user (user-repo/find-user-by-email db email)]
     (if (auth-service/verify-password password (:user/password user))
-     {:status 200
-      :body {:access-token (auth-service/create-access-token (:user/id user))
-             :refresh-token (auth-service/create-refresh-token (:user/id user))}}
-      
+      {:status 200
+       :body {:access-token (auth-service/create-access-token (:user/id user))
+              :refresh-token (auth-service/create-refresh-token (:user/id user))}}
+
       {:status 401
        :body {:error "invalid_credentials"
               :message "Invalid password"}})
-    
+
     {:status 401
-       :body {:error "invalid_credentials"
-              :message "Invalid email"}}))
+     :body {:error "invalid_credentials"
+            :message "Invalid email"}}))
 
 (defn confirm-email-handler [{{:keys [token]} :query-params}]
   (if-let [user (user-repo/find-user-by-email-confirmation-token db token)]
@@ -108,7 +108,7 @@
     (let [otp
           (auth-service/generate-otp)
 
-          user-id 
+          user-id
           (:user/id user)
 
           name
@@ -121,30 +121,25 @@
 
     {:status 404 :body {:error "User not found."}}))
 
-(comment
-  
-  (auth-service/set-otp! "6ba6ee0e-e1b0-4f70-8a21-696c44756ac4" "840115")
-  )
-
 (defn otp-handler [{{{:keys [email otp]} :body} :parameters}]
-  (if-let [user 
+  (if-let [user
            (user-repo/find-user-by-email db email)]
-    
-    (let [user-id 
+
+    (let [user-id
           (:user/id user)
 
-          user-otp 
+          user-otp
           (:user/otp user)
 
-          user-expire-otp 
+          user-expire-otp
           (:user/otp-expires-at user)]
-      
+
       (prn user)
-      
+
       (if (and (not (auth-repo/otp-not-expired? user-expire-otp))
                (= user-otp otp))
-          {:status 200 :body {:access-token (auth-service/create-access-token user-id)
-                              :refresh-token (auth-service/create-refresh-token user-id)}}
-          {:status 400 :body {:message "OTP is invalid or expired."}})) 
-    
+        {:status 200 :body {:access-token (auth-service/create-access-token user-id)
+                            :refresh-token (auth-service/create-refresh-token user-id)}}
+        {:status 400 :body {:message "OTP is invalid or expired."}}))
+
     {:status 404 :body {:error "User not found."}}))

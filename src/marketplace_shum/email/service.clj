@@ -66,18 +66,3 @@
         email-message (create-otp-email to otp user-name)]
     (send-off email-agent (fn [_] (do-send-message email-config email-message)))
     (println "Queued confirmation email for" to)))
-
-(comment
-  (def to "alexandrvirtual@gmail.com")
-  (def token "161a3c65-5e9f-44c1-841f-63c237600bab")
-  (def user-name "Alexandr")
-  (def email-config (get config/*config* :email))
-  (def email-message (create-confirmation-email to token user-name))
-  (postal/send-message email-config email-message)
-  (str "base-url" ":" 3344 "/api/v1/auth/confirm-email?token=" (random-uuid))
-  (render-template "templates/otp.html" {"shum" "shum"
-                                         "name" user-name
-                                         "otp" "otp"
-                                         "reset" "header-img"})
-  (send-confirmation-email to (random-uuid) user-name)
-  (send-otp-email to (random-uuid) user-name))
