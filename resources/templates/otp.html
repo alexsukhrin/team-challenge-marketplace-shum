@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Код відновлення паролю</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Mulish&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Mulish", sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: auto;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .orange-block {
+        background: linear-gradient(to right, #ff7600, #ffa600);
+        color: white;
+        text-align: center;
+        padding: 20px 20px 0px;
+        border-radius: 12px;
+      }
+
+      .orange-block .icon {
+        width: 31px;
+      }
+
+      .orange-block h1 {
+        font-size: 22px;
+        margin: 16px 0 20px;
+      }
+
+      .orange-block .phone-img {
+        max-width: 250px;
+        width: 80%;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .content {
+        padding: 30px 20px;
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .content p {
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      .code {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .footer {
+        text-align: center;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #ffa600;
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: bold;
+        transition: background 0.3s ease;
+      }
+
+      .btn:hover {
+        background-color: #ff7600;
+      }
+
+      @media (max-width: 480px) {
+        .orange-block h1 {
+          font-size: 18px;
+        }
+
+        .content {
+          padding: 20px 15px;
+          font-size: 15px;
+        }
+
+        .btn {
+          padding: 10px 20px;
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="orange-block">
+        <img
+          src="{{shum}}"
+          alt="icon"
+          class="icon"
+        />
+        <h1>Код відновлення паролю</h1>
+        <img
+          src="{{reset}}"
+          alt="Phone image"
+          class="phone-img"
+        />
+      </div>
+
+      <div class="content">
+        <p>Привіт, {{name}}!</p>
+        <p>
+          У відповідь на запит щодо відновлення паролю ми надаємо код
+          підтвердження.
+        </p>
+        <p>Ваш одноразовий код: <span class="code">{{otp}}</span></p>
+        <p>
+          Якщо ви не надсилали цей запит, просто проігноруйте цей лист або
+          зверніться до служби підтримки.
+        </p>
+        <p>З повагою, Команда Shum.</p>
+      </div>
+
+      <div class="footer">
+        <a href="#" class="btn">Підтвердити</a>
+      </div>
+    </div>
+  </body>
+</html>

@@ -55,9 +55,22 @@
  :db/cardinality :db.cardinality/many
  :db/doc "Roles user"}
 
+ {:db/ident :user/favorite-categories
+ :db/valueType :db.type/ref
+ :db/cardinality :db.cardinality/many
+ :db/doc "Favorite user categories"}
+
 {:db/ident :user/permissions
  :db/valueType :db.type/ref
  :db/cardinality :db.cardinality/many
  :db/doc "Permissions user"}
-
-]
+ 
+ {:db/ident       :user/otp
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A token sent to the user to reset password."}
+ 
+ {:db/ident       :user/otp-expires-at
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The expiry date for the email confirmation otp."}]

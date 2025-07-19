@@ -80,3 +80,27 @@
                                  :user/email-confirmation-token token
                                  :user/email-confirmation-token-expires-at expiry}]})
     {:email-confirmation-token token}))
+
+(defn get-favorite-categories [conn user-id]
+  (as-> (d/db conn) $
+    (d/pull $
+            [:user/favorite-categories]
+            [:user/id user-id])
+    (:user/favorite-categories $)
+    (map :db/ident $)))
+
+(defn remove-favorite-category [conn user-id categories]
+  (d/transact conn {:tx-data (mapv #(vector :db/retract [:user/id user-id] :user/favorite-categories %) categories)}))
+
+(defn set-favorite-category [conn user-id categories]
+  (d/transact conn {:tx-data (mapv #(vector :db/add [:user/id user-id] :user/favorite-categories %) categories)}))
+
+(defn update-favorite-categories! [conn user-id favorite-categories]
+  (let [user-eid (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))
+        old-categories (get-favorite-categories conn user-eid)]
+
+    (when (seq old-categories)
+      (remove-favorite-category conn user-eid old-categories))
+
+    (when (seq favorite-categories)
+      (set-favorite-category conn user-eid favorite-categories))))
