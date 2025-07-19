@@ -2,8 +2,7 @@
   (:require [postal.core :as postal]
             [marketplace-shum.infra.config :as config]
             [clojure.java.io :as io]
-            [selmer.parser :as selmer]
-            [marketplace-shum.aws.service :as s3]))
+            [selmer.parser :as selmer]))
 
 (defn- do-send-message
   "The actual function that sends the email. To be run by the agent."
