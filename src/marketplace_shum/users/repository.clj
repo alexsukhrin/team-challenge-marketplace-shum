@@ -104,3 +104,13 @@
 
     (when (seq favorite-categories)
       (set-favorite-category conn user-eid favorite-categories))))
+
+(comment
+  
+  (require '[marketplace-shum.infra.db :refer [db]])
+  
+  (find-user-by-email db "alexandrvirtual@gmail.com")
+
+  (find-user-by-email db "rashiki44@gmail.com")
+  
+  )

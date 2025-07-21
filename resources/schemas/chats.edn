@@ -1,0 +1,26 @@
+[
+  ;; Chat entity
+  {:db/ident :chat/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :db/unique :db.unique/identity :db/doc "UUID чату"}
+  {:db/ident :chat/created-at :db/valueType :db.type/instant :db/cardinality :db.cardinality/one :db/doc "Час створення чату"}
+  {:db/ident :chat/updated-at :db/valueType :db.type/instant :db/cardinality :db.cardinality/one :db/doc "Час останньої активності в чаті"}
+  {:db/ident :chat/participants :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :db/doc "Учасники чату (user refs)"}
+  {:db/ident :chat/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Ім'я чату (для групових)"}
+  {:db/ident :chat/avatar-url :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Аватар чату"}
+  {:db/ident :chat/pinned-messages :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :db/doc "Закріплені повідомлення"}
+
+  ;; Message entity
+  {:db/ident :message/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :db/unique :db.unique/identity :db/doc "UUID повідомлення"}
+  {:db/ident :message/chat :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :db/doc "Чат, до якого належить повідомлення"}
+  {:db/ident :message/sender :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :db/doc "Відправник повідомлення (user ref)"}
+  {:db/ident :message/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Текст повідомлення"}
+  {:db/ident :message/sent-at :db/valueType :db.type/instant :db/cardinality :db.cardinality/one :db/doc "Час відправлення повідомлення"}
+  {:db/ident :message/read-by :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :db/doc "Користувачі, які прочитали повідомлення (user refs)"}
+  {:db/ident :message/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :db/doc "Тип повідомлення (text, image, document, audio, video, sticker, ...)"}
+  {:db/ident :message/file-url :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "URL до файлу (документ, фото, ...)"}
+  {:db/ident :message/file-name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Ім'я файлу"}
+  {:db/ident :message/file-size :db/valueType :db.type/long :db/cardinality :db.cardinality/one :db/doc "Розмір файлу в байтах"}
+  {:db/ident :message/file-mime :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "MIME-тип файлу"}
+  {:db/ident :message/forwarded-from :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :db/doc "Посилання на оригінальне повідомлення (forward)"}
+  {:db/ident :message/reply-to :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :db/doc "Посилання на повідомлення, на яке йде відповідь"}
+  {:db/ident :message/is-deleted :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :db/doc "Чи видалено повідомлення"}
+] 

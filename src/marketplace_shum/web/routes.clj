@@ -8,7 +8,8 @@
    [marketplace-shum.health.handler :as health]
    [marketplace-shum.auth.routes :as auth-routes]
    [marketplace-shum.ads.routes :as ads-routes]
-   [marketplace-shum.users.routes :as user-routes]))
+   [marketplace-shum.users.routes :as user-routes]
+   [marketplace-shum.chats.routes :as chat-routes]))
 
 (def swagger
   ["/swagger.json"
@@ -22,6 +23,7 @@
                     :tags [{:name "auth", :description "registration and authorization routes api"}
                            {:name "users", :description "create users routes api"}
                            {:name "ads", :description "products and categories routes api"}
+                           {:name "chats", :description "chats api"}
                            {:name "health", :description "health check status server api"}]}
           :handler (swagger/create-swagger-handler)}}])
 
@@ -38,7 +40,8 @@
    {:middleware api-middleware}
    auth-routes/routes
    ads-routes/routes
-   user-routes/routes])
+   user-routes/routes
+   chat-routes/routes])
 
 (def make-routes
   (ring/ring-handler
