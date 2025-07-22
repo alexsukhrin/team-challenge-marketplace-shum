@@ -39,4 +39,4 @@
   (repo/unread-counts db user-id))
 
 (defn mark-chat-read [chat-id user-id]
-  (repo/mark-chat-read! db chat-id user-id)) 
+  (repo/mark-chat-read! db chat-id user-id))

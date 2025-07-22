@@ -30,19 +30,19 @@
   (let [msg-id (random-uuid)
         now (java.util.Date.)
         tx {:tx-data [(merge
-                        {:message/id msg-id
-                         :message/chat [:chat/id chat-id]
-                         :message/sender [:user/id sender-id]
-                         :message/text text
-                         :message/sent-at now
-                         :message/type (or type :text)
-                         :message/read-by []}
-                        (when file-url {:message/file-url file-url})
-                        (when file-name {:message/file-name file-name})
-                        (when file-size {:message/file-size file-size})
-                        (when file-mime {:message/file-mime file-mime})
-                        (when forwarded-from {:message/forwarded-from [:message/id forwarded-from]})
-                        (when reply-to {:message/reply-to [:message/id reply-to]}))
+                       {:message/id msg-id
+                        :message/chat [:chat/id chat-id]
+                        :message/sender [:user/id sender-id]
+                        :message/text text
+                        :message/sent-at now
+                        :message/type (or type :text)
+                        :message/read-by []}
+                       (when file-url {:message/file-url file-url})
+                       (when file-name {:message/file-name file-name})
+                       (when file-size {:message/file-size file-size})
+                       (when file-mime {:message/file-mime file-mime})
+                       (when forwarded-from {:message/forwarded-from [:message/id forwarded-from]})
+                       (when reply-to {:message/reply-to [:message/id reply-to]}))
                       [:db/add [:chat/id chat-id] :chat/updated-at now]]}]
     (d/transact conn tx)
     msg-id))
@@ -98,8 +98,7 @@
   (let [db (d/db conn)
         user-eid (ffirst (d/q '[:find ?u :in $ ?user-id :where [?u :user/id ?user-id]] db user-id))
         msg-ids (map first (d/q '[:find ?m :in $ ?chat-id :where [?m :message/chat ?c] [?c :chat/id ?chat-id]] db chat-id))]
-    (d/transact conn {:tx-data (mapv #(vector :db/add % :message/read-by user-eid) msg-ids)}))) 
-
+    (d/transact conn {:tx-data (mapv #(vector :db/add % :message/read-by user-eid) msg-ids)})))
 
 (comment
 
@@ -111,7 +110,5 @@
   (get-chats-for-user db user-id)
 
   (create-chat! db [user-id user-id-2]
-                {:name "chat-gpt" 
-                 :avatar-url "http://localhost:3000/category/shoes.jpg"})
-
-  )
+                {:name "chat-gpt"
+                 :avatar-url "http://localhost:3000/category/shoes.jpg"}))

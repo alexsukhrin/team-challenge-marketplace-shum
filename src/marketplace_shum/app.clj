@@ -14,12 +14,12 @@
   (mount/start))
 
 (comment
-  ;; start
-
   (mount/start #'config/*config*)
   (mount/start #'db/db)
   (mount/start #'m/migratus)
   (mount/start #'s/http-server)
+
+  (mount/stop #'s/http-server)
 
   (mount/stop)
 

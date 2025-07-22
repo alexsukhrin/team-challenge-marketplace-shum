@@ -143,5 +143,4 @@
                                 :user_id ::user-id}}
             :responses {200 {:body {:message string?}}
                         400 {:body {:error string?}}}
-            :handler #'handler/mark-chat-read-handler}}]
-  ])
+            :handler #'handler/mark-chat-read-handler}}]])

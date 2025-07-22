@@ -9,7 +9,8 @@
    [marketplace-shum.auth.routes :as auth-routes]
    [marketplace-shum.ads.routes :as ads-routes]
    [marketplace-shum.users.routes :as user-routes]
-   [marketplace-shum.chats.routes :as chat-routes]))
+   [marketplace-shum.chats.routes :as chat-routes]
+   [marketplace-shum.notifications.routes :as notifications-routes]))
 
 (def swagger
   ["/swagger.json"
@@ -35,14 +36,6 @@
              :urls.primaryName "openapi"
              :operationsSorter "alpha"}}))
 
-(def v1-routes
-  ["/api/v1"
-   {:middleware api-middleware}
-   auth-routes/routes
-   ads-routes/routes
-   user-routes/routes
-   chat-routes/routes])
-
 (def make-routes
   (ring/ring-handler
    (ring/router
@@ -50,7 +43,13 @@
       {:middleware common-middleware}
       swagger
       health/route
-      v1-routes]]
+      ["/api/v1"
+       {:middleware api-middleware}
+       auth-routes/routes
+       ads-routes/routes
+       user-routes/routes
+       chat-routes/routes
+       notifications-routes/routes]]]
     middleware)
    (ring/routes
     (swagger-ui)

@@ -44,3 +44,8 @@ lib/
 target-migrate/
 META-INF/
 pgdata/
+
+.clj-kondo/imports/clj-commons/
+.clj-kondo/imports/manifold/
+.clj-kondo/imports/org.clj-commons/
+.clj-kondo/imports/potemkin/
