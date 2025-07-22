@@ -4,40 +4,43 @@
             [org.httpkit.server :as http]
             [clojure.core :as lib]))
 
-(defn notifications-handler [request]
-  (http/with-channel request channel
-    (let [{:keys [user]} request
-          user-id (:user-id user)]
-      (println "WS connected for user" user-id)
-      (noti-service/add-new-connection! user-id channel)
+(defn notifications-handler [{:keys [async-channel user]}]
+  (let [channel async-channel
+        user-id (:user-id user)]
 
-      (let [notis (noti-service/get-notifications user-id)
-            payload {:type "init"
-                     :notifications (map first notis)}]
-        (http/send! channel (json/generate-string payload)))
+    (println "WS connected for user" user-id)
+    (noti-service/add-new-connection! user-id channel)
 
-      (http/on-receive channel
-                       (fn [msg]
-                         (try
-                           (let [{:strs [type message notification-id]} (json/parse-string msg)]
-                             (case type
-                               "new"
-                               (let [notif-id (noti-service/create-notification {:message message :user-id user-id :read? false})]
-                                 (http/send! channel (json/generate-string {:type "ack" :id (str notif-id)})))
+    (let [notis (noti-service/get-notifications user-id)
+          payload {:type "init"
+                   :notifications (map first notis)}]
+      (http/send! channel (json/generate-string payload)))
 
-                               "mark-read"
-                               (do
-                                 (noti-service/mark-notification-read (lib/parse-uuid  notification-id))
-                                 (http/send! channel (json/generate-string {:type "marked-read"
-                                                                            :id notification-id})))
+    (http/on-receive channel
+                     (fn [msg]
+                       (try
+                         (let [{:strs [type message notification-id]} (json/parse-string msg)]
+                           (case type
+                             "new"
+                             (let [notif-id (noti-service/create-notification {:message message
+                                                                               :user-id user-id
+                                                                               :read? false})]
+                               (http/send! channel (json/generate-string {:type "ack"
+                                                                          :id (str notif-id)})))
 
-                               (http/send! channel (json/generate-string {:type "error"
-                                                                          :error "Unknown type"}))))
-                           (catch Exception _
+                             "mark-read"
+                             (do
+                               (noti-service/mark-notification-read (lib/parse-uuid notification-id))
+                               (http/send! channel (json/generate-string {:type "marked-read"
+                                                                          :id notification-id})))
+
                              (http/send! channel (json/generate-string {:type "error"
-                                                                        :error "Invalid JSON"}))))))
+                                                                        :error "Unknown type"}))))
+                         (catch Exception _
+                           (http/send! channel (json/generate-string {:type "error"
+                                                                      :error "Invalid JSON"}))))))
 
-      (http/on-close channel
-                     (fn [status]
-                       (println "WS disconnected:" status)
-                       (noti-service/remove-connection! user-id))))))
+    (http/on-close channel
+                   (fn [status]
+                     (println "WS disconnected for user" user-id "status:" status)
+                     (noti-service/remove-connection! user-id)))))
