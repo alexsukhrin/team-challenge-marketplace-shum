@@ -27,7 +27,9 @@
 
 (defn create-notification
   [{:keys [message user-id read?]}]
-  (noti-repo/create-notification db {:keys [message user-id read?]}))
+  (noti-repo/create-notification db {:message message
+                                     :user-id user-id
+                                     :read? read?}))
 
 (defn mark-notification-read
   [notification-id]
