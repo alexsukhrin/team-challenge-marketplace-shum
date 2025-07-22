@@ -6,30 +6,30 @@
 
 (defonce connections (atom {}))
 
-(defn add-new-connection! 
+(defn add-new-connection!
   [user-id ch]
   (swap! connections assoc user-id ch))
 
-(defn remove-connection! 
+(defn remove-connection!
   [user-id]
   (swap! connections dissoc user-id))
 
-(defn send-notification! 
+(defn send-notification!
   [user-id message]
   (when-let [channel (get @connections user-id)]
     (http/send! channel (json/generate-string
-                          {:type "notification"
-                           :message message}))))
+                         {:type "notification"
+                          :message message}))))
 
 (defn get-notifications
   [user-id]
   (noti-repo/get-notifications db user-id))
 
-(defn create-notification 
+(defn create-notification
   [{:keys [message user-id read?]}]
   (noti-repo/create-notification db {:keys [message user-id read?]}))
 
-(defn mark-notification-read 
+(defn mark-notification-read
   [notification-id]
   (noti-repo/mark-notification-read! db notification-id))
 

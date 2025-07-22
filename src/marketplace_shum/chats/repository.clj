@@ -1,6 +1,5 @@
 (ns marketplace-shum.chats.repository
-  (:require [datomic.client.api :as d]
-            [clj-time.core :as t]))
+  (:require [datomic.client.api :as d]))
 
 (defn create-chat! [conn user-ids & {:keys [name avatar-url]}]
   (let [chat-id (random-uuid)

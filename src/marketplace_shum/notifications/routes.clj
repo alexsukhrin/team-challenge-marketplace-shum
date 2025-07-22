@@ -1,7 +1,6 @@
 (ns marketplace-shum.notifications.routes
   (:require [marketplace-shum.notifications.handler :as noti-handler]
-            [marketplace-shum.web.middlewares :as middleware]
-            [org.httpkit.server :as http]))
+            [marketplace-shum.web.middlewares :as middleware]))
 
 (def routes
   ["/notifications"
