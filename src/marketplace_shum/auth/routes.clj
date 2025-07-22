@@ -55,6 +55,7 @@
             :response {200 {:body {:message ::auth-domain/message}}
                        400 {:body {:error ::auth-domain/error}}}
             :handler #'auth-handler/reset-password-handler}}]
+
    ["/otp"
     {:post {:summary "user verify otp"
             :description "This route does not require authorization."

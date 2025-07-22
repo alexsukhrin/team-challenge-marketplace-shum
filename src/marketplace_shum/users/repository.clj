@@ -52,15 +52,6 @@
 (defn set-email-confirmed! [conn id confirmed?]
   (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? id) id (java.util.UUID/fromString id))] :user/email-confirmed? confirmed?]]}))
 
-(defn add-role-to-user! [conn user-id role-uuid]
-  (let [user-id (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))
-        role-eid (ffirst (d/q '[:find ?e
-                                :in $ ?role-id
-                                :where [?e :role/id ?role-id]]
-                              (d/db conn) role-uuid))]
-    (when role-eid
-      (d/transact conn {:tx-data [[:db/add [:user/id user-id] :user/roles role-eid]]}))))
-
 (defn find-role-uuid-by-name [conn role-name]
   (ffirst (d/q '[:find ?id
                  :in $ ?name
@@ -81,34 +72,28 @@
                                  :user/email-confirmation-token-expires-at expiry}]})
     {:email-confirmation-token token}))
 
-(defn get-favorite-categories [conn user-id]
+(defn get-attributes [conn user-id attr-key]
   (as-> (d/db conn) $
-    (d/pull $
-            [:user/favorite-categories]
-            [:user/id user-id])
-    (:user/favorite-categories $)
+    (d/pull $ [attr-key] [:user/id user-id])
+    (get $ attr-key)
     (map :db/ident $)))
 
-(defn remove-favorite-category [conn user-id categories]
-  (d/transact conn {:tx-data (mapv #(vector :db/retract [:user/id user-id] :user/favorite-categories %) categories)}))
+(defn remove-attributes [conn user-id attr-key values]
+  (d/transact conn {:tx-data (mapv #(vector :db/retract [:user/id user-id] attr-key %) values)}))
 
-(defn set-favorite-category [conn user-id categories]
-  (d/transact conn {:tx-data (mapv #(vector :db/add [:user/id user-id] :user/favorite-categories %) categories)}))
+(defn set-attributes [conn user-id attr-key values]
+  (d/transact conn {:tx-data (mapv #(vector :db/add [:user/id user-id] attr-key %) values)}))
 
-(defn update-favorite-categories! [conn user-id favorite-categories]
+(defn update-attributes! [conn user-id attr-key new-values]
   (let [user-eid (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))
-        old-categories (get-favorite-categories conn user-eid)]
+        old-values (get-attributes conn user-eid attr-key)]
 
-    (when (seq old-categories)
-      (remove-favorite-category conn user-eid old-categories))
+    (when (seq old-values)
+      (remove-attributes conn user-eid attr-key old-values))
 
-    (when (seq favorite-categories)
-      (set-favorite-category conn user-eid favorite-categories))))
+    (when (seq new-values)
+      (set-attributes conn user-eid attr-key new-values))))
 
-(comment
-
-  (require '[marketplace-shum.infra.db :refer [db]])
-
-  (find-user-by-email db "alexandrvirtual@gmail.com")
-
-  (find-user-by-email db "rashiki44@gmail.com"))
+(defn set-password! [conn user-id password-hash]
+  (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))]
+                               :user/password password-hash]]}))
