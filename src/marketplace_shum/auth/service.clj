@@ -71,7 +71,7 @@
   (if-let [role-uuid (user-repo/find-role-uuid-by-name db "user")]
     (do
       (user-repo/set-email-confirmed! db user-id true)
-      (user-repo/add-role-to-user! db user-id role-uuid)
+      (user-repo/set-attributes db user-id :user/roles (vec role-uuid))
       true)
     false))
 
