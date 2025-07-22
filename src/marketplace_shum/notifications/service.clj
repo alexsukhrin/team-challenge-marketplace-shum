@@ -2,6 +2,7 @@
   (:require [cheshire.core :as json]
             [org.httpkit.server :as http]
             [marketplace-shum.infra.db :refer [db]]
+            [marketplace-shum.notifications.domain :as noti-domain]
             [marketplace-shum.notifications.repository :as noti-repo]))
 
 (defonce connections (atom {}))
@@ -27,9 +28,11 @@
 
 (defn create-notification
   [{:keys [message user-id read?]}]
-  (noti-repo/create-notification db {:message message
-                                     :user-id user-id
-                                     :read? read?}))
+  (if (noti-domain/valid-message? message)
+    (noti-repo/create-notification db {:message message
+                                       :user-id user-id
+                                       :read? read?})
+    (throw (ex-info "Invalid notification message" {:reason :bad-message}))))
 
 (defn mark-notification-read
   [notification-id]
