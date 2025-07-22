@@ -10,6 +10,7 @@
    [ring.middleware.cors :as cors]
    [clojure.walk :as walk]
    [clojure.string :as str]
+   [camel-snake-kebab.core :as csk]
    [reitit.ring.middleware.dev :as dev]
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.exception :as exception]
@@ -78,12 +79,20 @@
 (def api-middleware
   [wrap-keyword-query-params])
 
+(def snake-muuntaja
+  (m/create
+   (-> m/default-options
+       (assoc-in [:formats "application/json" :decoder-opts :decode-key-fn]
+                 camel-snake-kebab.core/->kebab-case-keyword)
+       (assoc-in [:formats "application/json" :encoder-opts :encode-key-fn]
+                 camel-snake-kebab.core/->snake_case_string))))
+
 (def middleware {:reitit.middleware/transform dev/print-request-diffs
                  :validate spec/validate ;; enable spec validation for route data
               ;;:reitit.spec/wrap spell/closed ;; strict top-level validation
                  :exception pretty/exception
                  :data {:coercion reitit.coercion.spec/coercion
-                        :muuntaja m/instance
+                        :muuntaja snake-muuntaja
                         :middleware [;; swagger feature
                                      swagger/swagger-feature
                                      ;; query-params & form-params
