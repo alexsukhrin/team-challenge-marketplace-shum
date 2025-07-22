@@ -1,7 +1,8 @@
 (ns marketplace-shum.users.routes
   (:require
    [marketplace-shum.users.handler :as user-handler]
-   [marketplace-shum.web.middlewares :as middleware]))
+   [marketplace-shum.web.middlewares :as middleware]
+   [marketplace-shum.auth.domain :as auth-domain]))
 
 (def routes
   ["/users"
@@ -10,7 +11,8 @@
    ["/update-password"
     {:patch {:summary "user update password"
              :description "This route requires authorization."
-             :parameters {:body {:password string?}}
+             :parameters {:body {:password ::auth-domain/password}}
+             :middleware [middleware/wrap-authentication]
              :response {200 {:body {:message string?}}
                         400 {:body {:error string?}}}
              :handler #'user-handler/update-password-handler}

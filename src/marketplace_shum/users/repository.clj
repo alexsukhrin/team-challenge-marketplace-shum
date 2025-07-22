@@ -94,10 +94,6 @@
     (when (seq new-values)
       (set-attributes conn user-eid attr-key new-values))))
 
-(comment
-
-  (require '[marketplace-shum.infra.db :refer [db]])
-
-  (find-user-by-email db "alexandrvirtual@gmail.com")
-
-  (find-user-by-email db "rashiki44@gmail.com"))
+(defn set-password! [conn user-id password-hash]
+  (d/transact conn {:tx-data [[:db/add [:user/id (if (uuid? user-id) user-id (java.util.UUID/fromString user-id))]
+                               :user/password password-hash]]}))

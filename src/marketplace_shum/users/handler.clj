@@ -18,5 +18,6 @@
   (user-service/update-roles (c/parse-uuid (:user-id user)) body-params)
   {:status 200 :body {:message "Roles updated"}})
 
-(defn update-password-handler [_]
+(defn update-password-handler [{:keys [user body-params]}]
+  (user-service/update-password (c/parse-uuid (:user-id user)) (:password body-params))
   {:status 200 :body {:message "Password updated"}})

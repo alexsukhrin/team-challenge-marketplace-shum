@@ -60,10 +60,10 @@
         {:status 410 :body {:message "Confirmation token expired"}}
 
         :else
-        (if (auth-service/confirm-user! db user-id)
+        (do
+          (auth-service/confirm-user! db user-id)
           {:status 200 :body {:access-token (auth-service/create-access-token user-id)
-                              :refresh-token (auth-service/create-refresh-token user-id)}}
-          {:status 500 :body {:message "Role 'user' not found. Contact support."}})))
+                              :refresh-token (auth-service/create-refresh-token user-id)}})))
     {:status 404 :body {:message "Token not found"}}))
 
 (defn logout-handler [_]
@@ -133,8 +133,6 @@
 
           user-expire-otp
           (:user/otp-expires-at user)]
-
-      (prn user)
 
       (if (and (not (auth-repo/otp-not-expired? user-expire-otp))
                (= user-otp otp))

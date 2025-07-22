@@ -11,9 +11,6 @@
 (defn secret []
   (:jwt-secret config/*config*))
 
-(def ^:private access-token-lifetime (t/minutes 15))
-(def ^:private refresh-token-lifetime (t/days 7))
-
 (defn hash-password
   "Hashes a password using bcrypt."
   [password]
@@ -46,14 +43,14 @@
   [user-id]
   (create-token-for-user {:user-id user-id
                           :type :access
-                          :lifetime access-token-lifetime}))
+                          :lifetime (t/minutes 15)}))
 
 (defn create-refresh-token
   "Creates a long-lived refresh token."
   [user-id]
   (create-token-for-user {:user-id user-id
                           :type :refresh
-                          :lifetime refresh-token-lifetime}))
+                          :lifetime (t/days 7)}))
 
 (defn verify-token-of-type [token expected-type]
   (let [claims (jwt/unsign token (secret) {:alg :hs256})]
@@ -68,12 +65,8 @@
   (verify-token-of-type token :refresh))
 
 (defn confirm-user! [db user-id]
-  (if-let [role-uuid (user-repo/find-role-uuid-by-name db "user")]
-    (do
-      (user-repo/set-email-confirmed! db user-id true)
-      (user-repo/set-attributes db user-id :user/roles (vec role-uuid))
-      true)
-    false))
+  (user-repo/set-email-confirmed! db user-id true)
+  (user-repo/set-attributes db user-id :user/roles [:role/user]))
 
 (defn generate-otp []
   (format "%06d" (rand-int 1000000)))
