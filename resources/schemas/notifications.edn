@@ -1,0 +1,13 @@
+[{:db/ident       :notification/id
+  :db/valueType   :db.type/uuid
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one}
+ {:db/ident       :notification/message
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one}
+ {:db/ident       :notification/read?
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one}
+ {:db/ident       :notification/user
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one}] 
